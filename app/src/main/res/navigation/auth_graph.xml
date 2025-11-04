@@ -7,7 +7,11 @@
     <fragment
         android:id="@+id/loginRegisterFragment"
         android:name="com.example.csci_310project2team26.ui.auth.LoginRegisterFragment"
-        android:label="Login / Register">
-    </fragment>
+        android:label="Login / Register" />
+
+    <fragment
+        android:id="@+id/profileCreateFragment"
+        android:name="com.example.csci_310project2team26.ui.create_profile.ProfileCreateFragment"
+        android:label="Create profile" />
 
 </navigation>
