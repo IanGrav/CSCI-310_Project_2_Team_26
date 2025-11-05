@@ -3,4 +3,102 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+
+    <!-- NEW STRINGS FOR AUTHENTICATION AND PROFILE - ADD THESE BELOW -->
+
+    <!-- Common -->
+    <string name="app_logo">BestLLM Logo</string>
+    <string name="or">OR</string>
+    <string name="required_field">Required</string>
+    <string name="optional_comma_separated">Optional (comma-separated)</string>
+    <string name="cannot_be_changed">Cannot be changed</string>
+
+    <!-- Registration Screen -->
+    <string name="create_account">Create Account</string>
+    <string name="usc_students_only">USC Students Only</string>
+    <string name="full_name">Full Name</string>
+    <string name="usc_email">USC Email</string>
+    <string name="must_end_with_usc_edu">Must end with @usc.edu</string>
+    <string name="usc_student_id">USC Student ID</string>
+    <string name="ten_digit_id">10-digit ID</string>
+    <string name="password">Password</string>
+    <string name="min_8_characters">Minimum 8 characters</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="register">Register</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="login">Login</string>
+
+    <!-- Login Screen -->
+    <string name="welcome_back">Welcome Back</string>
+    <string name="login_to_continue">Login to continue to BestLLM</string>
+    <string name="remember_me">Remember me</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+
+    <!-- Profile Creation Screen -->
+    <string name="complete_your_profile">Complete Your Profile</string>
+    <string name="profile_creation_subtitle">Help the BestLLM community get to know you better</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="change_photo">Change Photo</string>
+    <string name="school_department">School/Department</string>
+    <string name="birth_date">Birth Date</string>
+    <string name="bio">Bio</string>
+    <string name="tell_us_about_yourself">Tell us about yourself (min. 10 characters)</string>
+    <string name="interests">Interests</string>
+    <string name="create_profile">Create Profile</string>
+    <string name="skip_for_now">Skip for now</string>
+
+    <!-- Validation Messages -->
+    <string name="email_required">Email is required</string>
+    <string name="invalid_email">Invalid email format</string>
+    <string name="must_be_usc_email">Must be a USC email (@usc.edu)</string>
+    <string name="student_id_required">Student ID is required</string>
+    <string name="invalid_student_id">Must be exactly 10 digits</string>
+    <string name="password_required">Password is required</string>
+    <string name="password_too_short">Password must be at least 8 characters</string>
+    <string name="passwords_not_match">Passwords do not match</string>
+    <string name="name_required">Name is required</string>
+
+    <!-- USC Schools/Departments -->
+    <string name="viterbi">Viterbi School of Engineering</string>
+    <string name="marshall">Marshall School of Business</string>
+    <string name="dornsife">Dornsife College of Letters, Arts and Sciences</string>
+    <string name="annenberg">Annenberg School for Communication and Journalism</string>
+    <string name="cinematic_arts">School of Cinematic Arts</string>
+    <string name="roski">Roski School of Art and Design</string>
+    <string name="architecture">School of Architecture</string>
+    <string name="thornton">Thornton School of Music</string>
+    <string name="keck">Keck School of Medicine</string>
+    <string name="pharmacy">School of Pharmacy</string>
+    <string name="social_work">Suzanne Dworak-Peck School of Social Work</string>
+    <string name="rossier">Rossier School of Education</string>
+    <string name="gould">Gould School of Law</string>
+    <string name="price">Price School of Public Policy</string>
+    <string name="dramatic_arts">School of Dramatic Arts</string>
+    <string name="ostrow">Herman Ostrow School of Dentistry</string>
+    <string name="other">Other</string>
+
+    <!-- Success/Error Messages -->
+    <string name="registration_success">Registration successful! Please complete your profile.</string>
+    <string name="registration_failed">Registration failed</string>
+    <string name="login_success">Welcome back!</string>
+    <string name="login_failed">Login failed</string>
+    <string name="invalid_credentials">Invalid email or password</string>
+    <string name="profile_created">Profile created successfully!</string>
+    <string name="profile_creation_failed">Failed to create profile</string>
+    <string name="profile_updated">Profile updated successfully!</string>
+    <string name="profile_update_failed">Failed to update profile</string>
+    <string name="password_reset_success">Password reset successfully!</string>
+    <string name="password_reset_failed">Failed to reset password</string>
+    <string name="network_error">Network error. Please check your connection.</string>
+
+    <!-- Content Descriptions -->
+    <string name="ic_person">Person icon</string>
+    <string name="ic_email">Email icon</string>
+    <string name="ic_lock">Lock icon</string>
+    <string name="ic_badge">Badge icon</string>
+    <string name="ic_school">School icon</string>
+    <string name="ic_calendar">Calendar icon</string>
+    <string name="ic_info">Info icon</string>
+    <string name="ic_star">Star icon</string>
 </resources>
