@@ -1,5 +1,6 @@
 package com.example.csci_310project2team26.ui.home;
 
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,8 @@ import com.example.csci_310project2team26.data.model.Post;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.text.NumberFormat;
 
 public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHolder> {
 
@@ -56,23 +59,65 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
         private final TextView titleTextView;
         private final TextView metaTextView;
         private final TextView contentTextView;
+        private final TextView upvoteTextView;
+        private final TextView scoreTextView;
+        private final TextView downvoteTextView;
+        private final NumberFormat numberFormat;
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
             titleTextView = itemView.findViewById(R.id.titleTextView);
             metaTextView = itemView.findViewById(R.id.metaTextView);
             contentTextView = itemView.findViewById(R.id.contentTextView);
+            upvoteTextView = itemView.findViewById(R.id.upvoteTextView);
+            scoreTextView = itemView.findViewById(R.id.scoreTextView);
+            downvoteTextView = itemView.findViewById(R.id.downvoteTextView);
+            numberFormat = NumberFormat.getIntegerInstance(Locale.getDefault());
         }
 
         public void bind(Post post) {
+            Resources resources = itemView.getResources();
             titleTextView.setText(post.getTitle());
-            String meta = (post.getAuthor_name() != null ? post.getAuthor_name() : "")
-                    + "  •  " + (post.getLlm_tag() != null ? post.getLlm_tag() : "")
-                    + "  •  "+ post.getComment_count() + " comments";
+
+            String author = post.getAuthor_name() != null && !post.getAuthor_name().isEmpty()
+                    ? post.getAuthor_name()
+                    : resources.getString(R.string.post_meta_unknown_author);
+            String tag = post.getLlm_tag() != null && !post.getLlm_tag().isEmpty()
+                    ? post.getLlm_tag()
+                    : resources.getString(R.string.post_meta_unknown_tag);
+            int commentCount = Math.max(post.getComment_count(), 0);
+            String commentsText = resources.getQuantityString(
+                    R.plurals.post_comments,
+                    commentCount,
+                    numberFormat.format(commentCount)
+            );
+            String meta = resources.getString(R.string.post_meta_format, author, tag, commentsText);
             metaTextView.setText(meta);
+
             contentTextView.setText(post.getContent());
+
+            int upvotes = Math.max(post.getUpvotes(), 0);
+            int downvotes = Math.max(post.getDownvotes(), 0);
+            int score = post.getUpvotes() - post.getDownvotes();
+
+            String upvoteText = resources.getQuantityString(
+                    R.plurals.post_upvotes,
+                    upvotes,
+                    numberFormat.format(upvotes)
+            );
+            String downvoteText = resources.getQuantityString(
+                    R.plurals.post_downvotes,
+                    downvotes,
+                    numberFormat.format(downvotes)
+            );
+            String scoreText = resources.getString(
+                    R.string.post_score,
+                    numberFormat.format(score)
+            );
+
+            upvoteTextView.setText(upvoteText);
+            downvoteTextView.setText(downvoteText);
+            scoreTextView.setText(scoreText);
         }
     }
 }
-
-

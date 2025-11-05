@@ -101,4 +101,30 @@
     <string name="ic_calendar">Calendar icon</string>
     <string name="ic_info">Info icon</string>
     <string name="ic_star">Star icon</string>
+
+    <!-- Home feed -->
+    <string name="search_posts_hint">Search posts</string>
+    <string name="sort_by_label">Sort by</string>
+    <string name="sort_option_newest">Newest</string>
+    <string name="sort_option_top">Top score</string>
+    <string name="home_empty_state">No posts match your filters yet.</string>
+    <string name="post_meta_unknown_author">Unknown author</string>
+    <string name="post_meta_unknown_tag">No tag</string>
+    <string name="post_meta_format">%1$s • %2$s • %3$s</string>
+    <string name="post_score">Score: %1$s</string>
+
+    <plurals name="post_comments">
+        <item quantity="one">%1$s comment</item>
+        <item quantity="other">%1$s comments</item>
+    </plurals>
+    <plurals name="post_upvotes">
+        <item quantity="one">%1$s upvote</item>
+        <item quantity="other">%1$s upvotes</item>
+    </plurals>
+    <plurals name="post_downvotes">
+        <item quantity="one">%1$s downvote</item>
+        <item quantity="other">%1$s downvotes</item>
+    </plurals>
+
+
 </resources>

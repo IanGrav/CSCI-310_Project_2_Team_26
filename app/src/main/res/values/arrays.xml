@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="post_sort_options">
+        <item>@string/sort_option_newest</item>
+        <item>@string/sort_option_top</item>
+    </string-array>
+</resources>

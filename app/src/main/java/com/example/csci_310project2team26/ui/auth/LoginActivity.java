@@ -63,6 +63,13 @@ public class LoginActivity extends AppCompatActivity {
         
         // Login button
         binding.loginButton.setOnClickListener(v -> {
+
+
+//            TEMPORARY CHANGE TO GET TO MAIN PAGE
+            navigateToMainApp();
+
+
+
             if (validateFields()) {
                 login();
             }

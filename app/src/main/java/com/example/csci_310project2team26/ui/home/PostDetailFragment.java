@@ -87,10 +87,10 @@ public class PostDetailFragment extends Fragment {
 
     private void vote(String type) {
         if (postId == null) return;
-        postRepository.votePost(postId, type, new PostRepository.Callback<com.example.csci_310project2team26.data.network.ApiService.VoteActionResponse>() {
+        postRepository.votePost(postId, type, new PostRepository.Callback<PostRepository.VoteActionResult>() {
             @Override
-            public void onSuccess(com.example.csci_310project2team26.data.network.ApiService.VoteActionResponse result) {
-                Toast.makeText(requireContext(), "Voted " + result.type, Toast.LENGTH_SHORT).show();
+            public void onSuccess(PostRepository.VoteActionResult result) {
+                Toast.makeText(requireContext(), "Voted " + result.getType(), Toast.LENGTH_SHORT).show();
                 loadPost(postId);
             }
 
@@ -111,5 +111,3 @@ public class PostDetailFragment extends Fragment {
         binding.commentEditText.setText("");
     }
 }
-
-
