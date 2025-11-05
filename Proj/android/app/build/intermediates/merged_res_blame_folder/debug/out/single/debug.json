@@ -1,0 +1,54 @@
+[
+    {
+        "merged": "com.bestllm.app-merged_res-43:/layout_activity_main.xml.flat",
+        "source": "com.bestllm.app-main-45:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/mipmap_ic_launcher.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/mipmap/ic_launcher.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/layout_activity_login.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/activity_login.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/mipmap_ic_launcher_round.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/mipmap/ic_launcher_round.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/layout_fragment_profile.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/fragment_profile.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/menu_bottom_navigation.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/menu/bottom_navigation.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/layout_item_post.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/item_post.xml"
+    },
+    {
+        "merged": "com.bestllm.app-merged_res-43:/layout_fragment_profile.xml.flat",
+        "source": "com.bestllm.app-main-45:/layout/fragment_profile.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/layout_dialog_create_post.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/dialog_create_post.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/layout_fragment_post_detail.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/fragment_post_detail.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/layout_activity_main.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/layout_item_comment.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/item_comment.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-merged_res-43:/layout_fragment_post_list.xml.flat",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/fragment_post_list.xml"
+    }
+]

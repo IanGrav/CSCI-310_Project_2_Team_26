@@ -1,0 +1,42 @@
+[
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-mergeDebugResources-42:/layout/activity_main.xml",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.bestllm.app-mergeDebugResources-42:/layout/fragment_profile.xml",
+        "source": "com.bestllm.app-main-45:/layout/fragment_profile.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-mergeDebugResources-42:/layout/item_comment.xml",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/item_comment.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-mergeDebugResources-42:/layout/fragment_post_detail.xml",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/fragment_post_detail.xml"
+    },
+    {
+        "merged": "com.bestllm.app-mergeDebugResources-42:/layout/activity_main.xml",
+        "source": "com.bestllm.app-main-45:/layout/activity_main.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-mergeDebugResources-42:/layout/fragment_post_list.xml",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/fragment_post_list.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-mergeDebugResources-42:/layout/dialog_create_post.xml",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/dialog_create_post.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-mergeDebugResources-42:/layout/activity_login.xml",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/activity_login.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-mergeDebugResources-42:/layout/item_post.xml",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/item_post.xml"
+    },
+    {
+        "merged": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-mergeDebugResources-42:/layout/fragment_profile.xml",
+        "source": "/Users/tonyfernandes/.gradle/daemon/8.0/com.bestllm.app-main-45:/layout/fragment_profile.xml"
+    }
+]
