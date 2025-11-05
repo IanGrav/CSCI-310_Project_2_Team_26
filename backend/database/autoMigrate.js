@@ -4,7 +4,7 @@
  * Safe to run multiple times - uses IF NOT EXISTS clauses
  */
 
-const { query } = require('../config/database');
+const { query, getClient } = require('../config/database');
 const fs = require('fs');
 const path = require('path');
 
@@ -27,6 +27,69 @@ async function checkTablesExist() {
     // If query fails, tables probably don't exist
     return false;
   }
+}
+
+/**
+ * Parse SQL file into individual statements
+ * Handles multi-line statements, functions, and triggers correctly
+ */
+function parseSQLStatements(sqlContent) {
+  const statements = [];
+  let currentStatement = '';
+  let inFunction = false;
+  let dollarQuoteTag = null;
+  
+  const lines = sqlContent.split('\n');
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    
+    // Skip empty lines and comments
+    if (trimmed === '' || trimmed.startsWith('--')) {
+      continue;
+    }
+    
+    currentStatement += line + '\n';
+    
+    // Detect function blocks with $$ delimiters
+    if (trimmed.includes('CREATE OR REPLACE FUNCTION')) {
+      inFunction = true;
+      // Extract dollar quote tag (e.g., $$ or $tag$)
+      const dollarMatch = trimmed.match(/\$[^$]*\$/);
+      if (dollarMatch) {
+        dollarQuoteTag = dollarMatch[0];
+      } else {
+        // Default to $$ if not found
+        dollarQuoteTag = '$$';
+      }
+    }
+    
+    // Check for end of function block (look for $$ language 'plpgsql')
+    if (inFunction && dollarQuoteTag && trimmed.includes(dollarQuoteTag)) {
+      // Check if this line contains both the closing tag and 'language'
+      if (trimmed.includes('language')) {
+        inFunction = false;
+        dollarQuoteTag = null;
+      }
+    }
+    
+    // If we have a semicolon and we're not in a function block, it's a complete statement
+    if (trimmed.endsWith(';') && !inFunction) {
+      const stmt = currentStatement.trim();
+      if (stmt.length > 0 && !stmt.startsWith('--')) {
+        statements.push(stmt);
+      }
+      currentStatement = '';
+    }
+  }
+  
+  // Add any remaining statement
+  if (currentStatement.trim().length > 0) {
+    statements.push(currentStatement.trim());
+  }
+  
+  return statements;
 }
 
 /**
@@ -68,34 +131,49 @@ async function autoMigrate() {
 
     const schema = fs.readFileSync(schemaPath, 'utf8');
 
-    // Split by semicolons and execute each statement
-    const statements = schema
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+    // Parse SQL into individual statements
+    const statements = parseSQLStatements(schema);
+    
+    console.log(`📋 Found ${statements.length} SQL statements to execute`);
 
+    // Execute statements one by one in a transaction
+    const client = await getClient();
     let executed = 0;
     let skipped = 0;
-
-    for (let i = 0; i < statements.length; i++) {
-      const statement = statements[i];
-      if (statement.trim()) {
-        try {
-          await query(statement);
-          executed++;
-        } catch (error) {
-          // Ignore "already exists" errors (idempotent)
-          if (error.message.includes('already exists') || 
-              error.message.includes('duplicate') ||
-              error.code === '42P07' || // PostgreSQL "relation already exists"
-              error.code === '42710') { // PostgreSQL "duplicate object"
-            skipped++;
-          } else {
-            console.error(`❌ Migration error on statement ${i + 1}:`, error.message);
-            throw error;
+    
+    try {
+      await client.query('BEGIN');
+      
+      for (let i = 0; i < statements.length; i++) {
+        const statement = statements[i];
+        if (statement.trim()) {
+          try {
+            await client.query(statement);
+            executed++;
+          } catch (error) {
+            // Ignore "already exists" errors (idempotent)
+            if (error.message.includes('already exists') || 
+                error.message.includes('duplicate') ||
+                error.code === '42P07' || // PostgreSQL "relation already exists"
+                error.code === '42710') { // PostgreSQL "duplicate object"
+              skipped++;
+            } else {
+              console.error(`❌ Migration error on statement ${i + 1}/${statements.length}:`, error.message);
+              console.error(`Statement preview: ${statement.substring(0, 150).replace(/\n/g, ' ')}...`);
+              await client.query('ROLLBACK');
+              throw error;
+            }
           }
         }
       }
+      
+      await client.query('COMMIT');
+      console.log(`✅ Migration completed! Executed ${executed} statements, skipped ${skipped}`);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
 
     // Run seed data
@@ -103,10 +181,7 @@ async function autoMigrate() {
     const seedPath = path.join(__dirname, 'seed.sql');
     if (fs.existsSync(seedPath)) {
       const seed = fs.readFileSync(seedPath, 'utf8');
-      const seedStatements = seed
-        .split(';')
-        .map(s => s.trim())
-        .filter(s => s.length > 0 && !s.startsWith('--'));
+      const seedStatements = parseSQLStatements(seed);
 
       for (const statement of seedStatements) {
         if (statement.trim()) {
@@ -130,7 +205,6 @@ async function autoMigrate() {
       ORDER BY table_name
     `);
 
-    console.log(`✅ Migration completed! Created ${executed} statements, skipped ${skipped}`);
     console.log(`📊 Database tables: ${tablesResult.rows.map(r => r.table_name).join(', ')}`);
 
     migrationRun = true;
@@ -155,4 +229,3 @@ module.exports = {
   autoMigrate,
   checkTablesExist
 };
-
