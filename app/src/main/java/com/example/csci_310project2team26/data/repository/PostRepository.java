@@ -265,12 +265,28 @@ public class PostRepository {
                 
                 if (response.isSuccessful() && response.body() != null) {
                     ApiService.VoteActionResponse voteResponse = response.body();
-                    // When action is "removed", type might be null
-                    String resultType = voteResponse.type != null ? voteResponse.type : 
-                                      ("removed".equals(voteResponse.action) ? null : type);
+                    if (voteResponse == null) {
+                        callback.onError("Invalid vote response");
+                        return;
+                    }
+                    
+                    // Safely extract response fields with null checks
+                    String responseAction = voteResponse.action != null ? voteResponse.action : "created";
+                    String responseMessage = voteResponse.message != null ? voteResponse.message : "Vote recorded";
+                    
+                    // When action is "removed", type might be null in the response
+                    String resultType;
+                    if (voteResponse.type != null) {
+                        resultType = voteResponse.type;
+                    } else if ("removed".equals(responseAction)) {
+                        resultType = null; // Vote was removed, no type
+                    } else {
+                        resultType = type; // Use the input type as fallback
+                    }
+                    
                     callback.onSuccess(new VoteActionResult(
-                        voteResponse.message != null ? voteResponse.message : "Vote recorded",
-                        voteResponse.action != null ? voteResponse.action : "created",
+                        responseMessage,
+                        responseAction,
                         resultType
                     ));
                 } else {
@@ -279,6 +295,8 @@ public class PostRepository {
                         errorMsg = "Authentication required";
                     } else if (response.code() == 404) {
                         errorMsg = "Post not found";
+                    } else if (response.code() == 400) {
+                        errorMsg = "Invalid vote request";
                     }
                     callback.onError(errorMsg);
                 }

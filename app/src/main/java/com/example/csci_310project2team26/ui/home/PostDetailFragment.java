@@ -168,6 +168,12 @@ public class PostDetailFragment extends Fragment {
     private void vote(String type) {
         if (postId == null || binding == null) return;
         
+        // Check buttons exist before accessing
+        if (binding.upvoteButton == null || binding.downvoteButton == null) {
+            Toast.makeText(getContext(), "Unable to vote", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         // Disable buttons to prevent rapid clicks
         binding.upvoteButton.setEnabled(false);
         binding.downvoteButton.setEnabled(false);
@@ -175,20 +181,39 @@ public class PostDetailFragment extends Fragment {
         postRepository.votePost(postId, type, new PostRepository.Callback<PostRepository.VoteActionResult>() {
             @Override
             public void onSuccess(PostRepository.VoteActionResult result) {
-                if (binding == null || getContext() == null) {
+                if (binding == null || getContext() == null || postId == null) {
                     return;
                 }
-                // Re-enable buttons
-                binding.upvoteButton.setEnabled(true);
-                binding.downvoteButton.setEnabled(true);
                 
-                String typeStr = result.getType();
-                if (typeStr != null && !typeStr.isEmpty()) {
-                    Toast.makeText(getContext(), "Voted " + typeStr, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), result.getMessage() != null ? result.getMessage() : "Vote updated", Toast.LENGTH_SHORT).show();
+                // Re-enable buttons
+                try {
+                    binding.upvoteButton.setEnabled(true);
+                    binding.downvoteButton.setEnabled(true);
+                    
+                    // Safely get message and type
+                    String message = result != null && result.getMessage() != null 
+                            ? result.getMessage() 
+                            : "Vote updated";
+                    String typeStr = result != null ? result.getType() : null;
+                    
+                    if (typeStr != null && !typeStr.isEmpty()) {
+                        Toast.makeText(getContext(), "Voted " + typeStr, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                    }
+                    
+                    // Reload post to get updated vote counts
+                    loadPost(postId);
+                } catch (Exception e) {
+                    // If anything fails, at least re-enable buttons and show error
+                    if (binding != null) {
+                        binding.upvoteButton.setEnabled(true);
+                        binding.downvoteButton.setEnabled(true);
+                    }
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Vote updated but failed to refresh", Toast.LENGTH_SHORT).show();
+                    }
                 }
-                loadPost(postId);
             }
 
             @Override
@@ -197,9 +222,13 @@ public class PostDetailFragment extends Fragment {
                     return;
                 }
                 // Re-enable buttons on error
-                binding.upvoteButton.setEnabled(true);
-                binding.downvoteButton.setEnabled(true);
-                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
+                try {
+                    binding.upvoteButton.setEnabled(true);
+                    binding.downvoteButton.setEnabled(true);
+                    Toast.makeText(getContext(), error != null ? error : "Failed to vote", Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    // Ignore errors in error handler
+                }
             }
         });
     }
