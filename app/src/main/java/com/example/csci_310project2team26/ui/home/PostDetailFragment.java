@@ -90,7 +90,11 @@ public class PostDetailFragment extends Fragment {
         commentsViewModel.getLatestPostedComment().observe(getViewLifecycleOwner(), comment -> {
             if (comment == null) return;
             binding.commentEditText.setText("");
-            binding.commentsRecyclerView.scrollToPosition(0);
+            // Comments will be reloaded automatically by the ViewModel
+            // Scroll to top after a brief delay to allow RecyclerView to update
+            binding.commentsRecyclerView.post(() -> {
+                binding.commentsRecyclerView.scrollToPosition(0);
+            });
         });
     }
 

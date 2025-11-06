@@ -95,10 +95,9 @@ public class AuthRepository {
                     LoginResponse loginResponse = response.body();
                     User user = loginResponse.getUser();
                     
-                    // Save session if remember me is checked
-                    if (rememberMe) {
-                        saveSession(user, loginResponse.getToken());
-                    }
+                    // Always save session for authenticated API calls
+                    // rememberMe can be used for persistent storage later
+                    saveSession(user, loginResponse.getToken());
                     
                     callback.onSuccess(user);
                 } else {

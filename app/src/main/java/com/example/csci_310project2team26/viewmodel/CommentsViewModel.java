@@ -56,17 +56,11 @@ public class CommentsViewModel extends ViewModel {
         commentRepository.createComment(postId, text, new CommentRepository.Callback<Comment>() {
             @Override
             public void onSuccess(Comment result) {
-                loading.postValue(false);
                 postingComment.postValue(false);
-                List<Comment> current = comments.getValue();
-                if (current == null) {
-                    current = new ArrayList<>();
-                } else {
-                    current = new ArrayList<>(current);
-                }
-                current.add(0, result);
-                comments.postValue(current);
                 latestPostedComment.postValue(result);
+                // Reload comments from server to ensure we have the latest data
+                // This ensures the comment count and all comments are up-to-date
+                loadComments(postId);
             }
 
             @Override

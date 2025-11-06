@@ -1,24 +1,18 @@
 package com.example.csci_310project2team26.data.repository;
 
 import com.example.csci_310project2team26.data.model.Post;
+import com.example.csci_310project2team26.data.network.ApiService;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
+
+import retrofit2.Response;
 
 /**
- * PostRepository - Provides in-memory demo data with rich querying helpers.
- *
- * This implementation removes the dependency on the backend service so that
- * the Android client can be exercised end-to-end while the API is unstable.
- * All operations are thread offloaded to mimic the asynchronous Retrofit
- * behaviour the UI layer was originally written for.
+ * PostRepository - Handles post data operations using backend API
+ * Part of the Repository layer in MVVM architecture
  */
 public class PostRepository {
 
@@ -76,14 +70,12 @@ public class PostRepository {
         }
     }
 
-    private static final List<Post> SHARED_POSTS = Collections.synchronizedList(new ArrayList<>());
-    private static boolean seeded = false;
-
+    private final ApiService apiService;
     private final ExecutorService executorService;
 
     public PostRepository() {
+        this.apiService = ApiService.getInstance();
         this.executorService = Executors.newSingleThreadExecutor();
-        seedDummyPosts();
     }
 
     public interface Callback<T> {
@@ -91,6 +83,9 @@ public class PostRepository {
         void onError(String error);
     }
 
+    /**
+     * Fetch posts with optional filtering and sorting
+     */
     public void fetchPosts(String sort,
                            Integer limit,
                            Integer offset,
@@ -98,14 +93,44 @@ public class PostRepository {
                            Callback<PostsResult> callback) {
         executorService.execute(() -> {
             try {
-                List<Post> result = queryPosts(null, "full_text", sort, isPromptPost);
-                callback.onSuccess(buildResult(result, limit, offset));
+                retrofit2.Call<ApiService.PostsResponse> call = apiService.getPosts(
+                    sort != null ? sort : "newest",
+                    limit != null ? limit : 50,
+                    offset != null ? offset : 0,
+                    isPromptPost
+                );
+                
+                Response<ApiService.PostsResponse> response = call.execute();
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiService.PostsResponse postsResponse = response.body();
+                    List<Post> posts = postsResponse.posts != null ? postsResponse.posts : new ArrayList<>();
+                    int count = postsResponse.count;
+                    
+                    callback.onSuccess(new PostsResult(
+                        posts,
+                        count,
+                        limit != null ? limit : 50,
+                        offset != null ? offset : 0
+                    ));
+                } else {
+                    String errorMsg = "Failed to load posts";
+                    if (response.code() == 401) {
+                        errorMsg = "Authentication required";
+                    } else if (response.code() == 500) {
+                        errorMsg = "Server error";
+                    }
+                    callback.onError(errorMsg);
+                }
             } catch (Exception e) {
-                callback.onError(e.getMessage() != null ? e.getMessage() : "Unable to load posts");
+                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
             }
         });
     }
 
+    /**
+     * Search posts
+     */
     public void searchPosts(String query,
                             String searchType,
                             String sort,
@@ -115,33 +140,69 @@ public class PostRepository {
                             Callback<PostsResult> callback) {
         executorService.execute(() -> {
             try {
-                List<Post> result = queryPosts(query, searchType, sort, isPromptPost);
-                callback.onSuccess(buildResult(result, limit, offset));
+                retrofit2.Call<ApiService.PostsResponse> call = apiService.searchPosts(
+                    query,
+                    searchType != null ? searchType : "full_text",
+                    limit != null ? limit : 50,
+                    offset != null ? offset : 0
+                );
+                
+                Response<ApiService.PostsResponse> response = call.execute();
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiService.PostsResponse postsResponse = response.body();
+                    List<Post> posts = postsResponse.posts != null ? postsResponse.posts : new ArrayList<>();
+                    int count = postsResponse.count;
+                    
+                    // Filter by prompt post type if specified
+                    if (isPromptPost != null) {
+                        List<Post> filtered = new ArrayList<>();
+                        for (Post post : posts) {
+                            if (post.isIs_prompt_post() == isPromptPost) {
+                                filtered.add(post);
+                            }
+                        }
+                        posts = filtered;
+                    }
+                    
+                    callback.onSuccess(new PostsResult(
+                        posts,
+                        count,
+                        limit != null ? limit : 50,
+                        offset != null ? offset : 0
+                    ));
+                } else {
+                    callback.onError("Failed to search posts");
+                }
             } catch (Exception e) {
-                callback.onError(e.getMessage() != null ? e.getMessage() : "Unable to search posts");
+                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
             }
         });
     }
 
+    /**
+     * Get single post by ID
+     */
     public void getPostById(String postId, Callback<Post> callback) {
         executorService.execute(() -> {
-            Post post = null;
-            synchronized (SHARED_POSTS) {
-                for (Post candidate : SHARED_POSTS) {
-                    if (candidate.getId().equals(postId)) {
-                        post = copyPost(candidate);
-                        break;
-                    }
+            try {
+                retrofit2.Call<ApiService.PostResponse> call = apiService.getPostById(postId);
+                Response<ApiService.PostResponse> response = call.execute();
+                
+                if (response.isSuccessful() && response.body() != null && response.body().post != null) {
+                    callback.onSuccess(response.body().post);
+                } else {
+                    callback.onError("Post not found");
                 }
-            }
-            if (post != null) {
-                callback.onSuccess(post);
-            } else {
-                callback.onError("Post not found");
+            } catch (Exception e) {
+                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
             }
         });
     }
 
+    /**
+     * Create new post
+     */
     public void createPost(String title,
                            String content,
                            String llmTag,
@@ -149,81 +210,115 @@ public class PostRepository {
                            Callback<Post> callback) {
         executorService.execute(() -> {
             try {
-                String userId = SessionManager.getUserId();
-                String authorId = userId != null ? userId : "demo-user";
-                String authorName = userId != null ? userId : "Demo User";
-
-                long now = System.currentTimeMillis();
-                Post newPost = new Post();
-                newPost.setId(UUID.randomUUID().toString());
-                newPost.setAuthor_id(authorId);
-                newPost.setAuthor_name(authorName);
-                newPost.setTitle(title);
-                newPost.setContent(content);
-                newPost.setLlm_tag(llmTag);
-                newPost.setIs_prompt_post(isPromptPost);
-                String timestamp = Long.toString(now);
-                newPost.setCreated_at(timestamp);
-                newPost.setUpdated_at(timestamp);
-                newPost.setUpvotes(0);
-                newPost.setDownvotes(0);
-                newPost.setComment_count(0);
-
-                synchronized (SHARED_POSTS) {
-                    SHARED_POSTS.add(0, newPost);
+                String token = SessionManager.getToken();
+                if (token == null) {
+                    callback.onError("Authentication required");
+                    return;
                 }
-
-                callback.onSuccess(copyPost(newPost));
+                
+                retrofit2.Call<ApiService.PostResponse> call = apiService.createPost(
+                    "Bearer " + token,
+                    title,
+                    content,
+                    llmTag,
+                    isPromptPost
+                );
+                
+                Response<ApiService.PostResponse> response = call.execute();
+                
+                if (response.isSuccessful() && response.body() != null && response.body().post != null) {
+                    callback.onSuccess(response.body().post);
+                } else {
+                    String errorMsg = "Failed to create post";
+                    if (response.code() == 401) {
+                        errorMsg = "Authentication required";
+                    } else if (response.code() == 400) {
+                        errorMsg = "Invalid post data";
+                    }
+                    callback.onError(errorMsg);
+                }
             } catch (Exception e) {
-                callback.onError(e.getMessage() != null ? e.getMessage() : "Unable to create post");
+                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
             }
         });
     }
 
+    /**
+     * Vote on a post
+     */
     public void votePost(String postId, String type, Callback<VoteActionResult> callback) {
         executorService.execute(() -> {
-            synchronized (SHARED_POSTS) {
-                for (Post post : SHARED_POSTS) {
-                    if (post.getId().equals(postId)) {
-                        String normalized = type != null ? type.toLowerCase(Locale.US) : "";
-                        switch (normalized) {
-                            case "up":
-                                post.setUpvotes(post.getUpvotes() + 1);
-                                callback.onSuccess(new VoteActionResult("Vote recorded", "added", "up"));
-                                return;
-                            case "down":
-                                post.setDownvotes(post.getDownvotes() + 1);
-                                callback.onSuccess(new VoteActionResult("Vote recorded", "added", "down"));
-                                return;
-                            default:
-                                callback.onError("Invalid vote type");
-                                return;
-                        }
-                    }
+            try {
+                String token = SessionManager.getToken();
+                if (token == null) {
+                    callback.onError("Authentication required");
+                    return;
                 }
+                
+                retrofit2.Call<ApiService.VoteActionResponse> call = apiService.votePost(
+                    "Bearer " + token,
+                    postId,
+                    type
+                );
+                
+                Response<ApiService.VoteActionResponse> response = call.execute();
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiService.VoteActionResponse voteResponse = response.body();
+                    callback.onSuccess(new VoteActionResult(
+                        voteResponse.message != null ? voteResponse.message : "Vote recorded",
+                        voteResponse.action != null ? voteResponse.action : "created",
+                        voteResponse.type != null ? voteResponse.type : type
+                    ));
+                } else {
+                    callback.onError("Failed to vote on post");
+                }
+            } catch (Exception e) {
+                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
             }
-            callback.onError("Post not found");
         });
     }
 
+    /**
+     * Fetch posts for a specific user (search by author)
+     */
     public void fetchPostsForUser(String userId, Callback<List<Post>> callback) {
         executorService.execute(() -> {
-            if (userId == null || userId.trim().isEmpty()) {
-                callback.onSuccess(new ArrayList<>());
-                return;
-            }
-            List<Post> results = new ArrayList<>();
-            synchronized (SHARED_POSTS) {
-                for (Post post : SHARED_POSTS) {
-                    if (userId.equals(post.getAuthor_id())) {
-                        results.add(copyPost(post));
+            try {
+                // Search for posts by author name (we'll need to get user name first or search)
+                // For now, we'll fetch all posts and filter - not ideal but works
+                retrofit2.Call<ApiService.PostsResponse> call = apiService.getPosts(
+                    "newest",
+                    100,
+                    0,
+                    null
+                );
+                
+                Response<ApiService.PostsResponse> response = call.execute();
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Post> allPosts = response.body().posts != null ? response.body().posts : new ArrayList<>();
+                    List<Post> userPosts = new ArrayList<>();
+                    
+                    for (Post post : allPosts) {
+                        if (userId.equals(post.getAuthor_id())) {
+                            userPosts.add(post);
+                        }
                     }
+                    
+                    callback.onSuccess(userPosts);
+                } else {
+                    callback.onError("Failed to load user posts");
                 }
+            } catch (Exception e) {
+                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
             }
-            callback.onSuccess(results);
         });
     }
 
+    /**
+     * Update a post
+     */
     public void updatePost(String postId,
                            String title,
                            String content,
@@ -231,229 +326,147 @@ public class PostRepository {
                            boolean isPromptPost,
                            Callback<Post> callback) {
         executorService.execute(() -> {
-            synchronized (SHARED_POSTS) {
-                for (Post post : SHARED_POSTS) {
-                    if (post.getId().equals(postId)) {
-                        post.setTitle(title);
-                        post.setContent(content);
-                        post.setLlm_tag(llmTag);
-                        post.setIs_prompt_post(isPromptPost);
-                        post.setUpdated_at(Long.toString(System.currentTimeMillis()));
-                        callback.onSuccess(copyPost(post));
-                        return;
-                    }
+            try {
+                String token = SessionManager.getToken();
+                if (token == null) {
+                    callback.onError("Authentication required");
+                    return;
                 }
+                
+                retrofit2.Call<ApiService.PostResponse> call = apiService.updatePost(
+                    "Bearer " + token,
+                    postId,
+                    title,
+                    content,
+                    llmTag,
+                    isPromptPost
+                );
+                
+                Response<ApiService.PostResponse> response = call.execute();
+                
+                if (response.isSuccessful() && response.body() != null && response.body().post != null) {
+                    callback.onSuccess(response.body().post);
+                } else {
+                    String errorMsg = "Failed to update post";
+                    if (response.code() == 401) {
+                        errorMsg = "Authentication required";
+                    } else if (response.code() == 403) {
+                        errorMsg = "You can only edit your own posts";
+                    } else if (response.code() == 404) {
+                        errorMsg = "Post not found";
+                    }
+                    callback.onError(errorMsg);
+                }
+            } catch (Exception e) {
+                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
             }
-            callback.onError("Post not found");
         });
     }
 
-    private PostsResult buildResult(List<Post> posts, Integer limit, Integer offset) {
-        int safeLimit = limit != null ? Math.max(limit, 0) : posts.size();
-        int safeOffset = offset != null ? Math.max(offset, 0) : 0;
-
-        if (safeLimit == 0) {
-            safeLimit = posts.size();
-        }
-
-        int from = Math.min(safeOffset, posts.size());
-        int to = Math.min(from + safeLimit, posts.size());
-        List<Post> slice = posts.subList(from, to)
-                .stream()
-                .map(this::copyPost)
-                .collect(Collectors.toList());
-
-        return new PostsResult(slice, posts.size(), safeLimit, safeOffset);
-    }
-
-    private List<Post> queryPosts(String query,
-                                  String searchType,
-                                  String sort,
-                                  Boolean isPromptPost) {
-        List<Post> working;
-        synchronized (SHARED_POSTS) {
-            working = new ArrayList<>(SHARED_POSTS);
-        }
-
-        if (isPromptPost != null) {
-            working = working.stream()
-                    .filter(post -> post.isIs_prompt_post() == isPromptPost)
-                    .collect(Collectors.toList());
-        }
-
-        if (query != null && !query.trim().isEmpty()) {
-            String search = query.trim().toLowerCase(Locale.US);
-            String mode = searchType != null ? searchType.toLowerCase(Locale.US) : "full_text";
-            working = working.stream()
-                    .filter(post -> matchesSearch(post, search, mode))
-                    .collect(Collectors.toList());
-        }
-
-        Comparator<Post> comparator = buildComparator(sort);
-        working.sort(comparator);
-        return working;
-    }
-
-    private boolean matchesSearch(Post post, String search, String mode) {
-        switch (mode) {
-            case "title":
-                return contains(post.getTitle(), search);
-            case "content":
-                return contains(post.getContent(), search);
-            case "author":
-                return contains(post.getAuthor_name(), search);
-            case "tag":
-                return contains(post.getLlm_tag(), search);
-            case "full_text":
-            default:
-                return contains(post.getTitle(), search)
-                        || contains(post.getContent(), search)
-                        || contains(post.getAuthor_name(), search)
-                        || contains(post.getLlm_tag(), search);
-        }
-    }
-
-    private boolean contains(String value, String search) {
-        return value != null && value.toLowerCase(Locale.US).contains(search);
-    }
-
-    private Comparator<Post> buildComparator(String sort) {
-        Comparator<Post> byCreatedDesc = Comparator.comparing(this::resolveCreatedAt).reversed();
-        if (sort == null) {
-            return byCreatedDesc;
-        }
-        switch (sort.toLowerCase(Locale.US)) {
-            case "oldest":
-                return byCreatedDesc.reversed();
-            case "top":
-                return Comparator.comparingInt(this::score)
-                        .thenComparing(this::resolveCreatedAt)
-                        .reversed();
-            case "trending":
-                return Comparator.comparingInt(this::score)
-                        .reversed()
-                        .thenComparing(this::resolveCreatedAt, Comparator.reverseOrder());
-            case "new":
-            case "newest":
-            default:
-                return byCreatedDesc;
-        }
-    }
-
-    private int score(Post post) {
-        return post.getUpvotes() - post.getDownvotes();
-    }
-
-    private long resolveCreatedAt(Post post) {
-        String created = post.getCreated_at();
-        if (created == null || created.isEmpty()) {
-            return Long.MIN_VALUE;
-        }
-        try {
-            return Long.parseLong(created);
-        } catch (NumberFormatException ignored) {
-            return Long.MIN_VALUE;
-        }
-    }
-
-    private Post copyPost(Post original) {
-        return new Post(
-                original.getId(),
-                original.getAuthor_id(),
-                original.getAuthor_name(),
-                original.getTitle(),
-                original.getContent(),
-                original.getLlm_tag(),
-                original.isIs_prompt_post(),
-                original.getCreated_at(),
-                original.getUpdated_at(),
-                original.getUpvotes(),
-                original.getDownvotes(),
-                original.getComment_count()
-        );
-    }
-
-    private void seedDummyPosts() {
-        synchronized (SHARED_POSTS) {
-            if (seeded || !SHARED_POSTS.isEmpty()) {
-                return;
+    /**
+     * Delete a post
+     */
+    public void deletePost(String postId, Callback<Void> callback) {
+        executorService.execute(() -> {
+            try {
+                String token = SessionManager.getToken();
+                if (token == null) {
+                    callback.onError("Authentication required");
+                    return;
+                }
+                
+                retrofit2.Call<Void> call = apiService.deletePost(
+                    "Bearer " + token,
+                    postId
+                );
+                
+                Response<Void> response = call.execute();
+                
+                if (response.isSuccessful()) {
+                    callback.onSuccess(null);
+                } else {
+                    String errorMsg = "Failed to delete post";
+                    if (response.code() == 401) {
+                        errorMsg = "Authentication required";
+                    } else if (response.code() == 403) {
+                        errorMsg = "You can only delete your own posts";
+                    } else if (response.code() == 404) {
+                        errorMsg = "Post not found";
+                    }
+                    callback.onError(errorMsg);
+                }
+            } catch (Exception e) {
+                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
             }
-            seeded = true;
-        }
-        long now = System.currentTimeMillis();
-        addDummyPost("1", "alice", "Alice Johnson", "Why GPT-4 excels at summarisation",
-                "Sharing a few tips to get consistent summaries from GPT-4 when dealing with long academic texts.",
-                "GPT-4", false, now - daysToMillis(1), 42, 3, 12);
-        addDummyPost("2", "bob", "Bob Martinez", "Claude vs. Gemini for coding assistance",
-                "Curious how people feel about the latest Claude update compared to Gemini Advanced for debugging.",
-                "Claude", false, now - hoursToMillis(10), 35, 5, 18);
-        addDummyPost("3", "carol", "Carol Nguyen", "Prompt: Creative brainstorming partner",
-                "Looking for a prompt that turns the model into a lively brainstorming buddy for product features.",
-                "PromptCraft", true, now - daysToMillis(2), 18, 1, 6);
-        addDummyPost("4", "dave", "Dave Kim", "Fine-tuning smaller models on niche datasets",
-                "Anyone experimented with adapting open LLMs on domain-specific corpora without breaking coherence?",
-                "LLaMA", false, now - hoursToMillis(5), 27, 2, 9);
-        addDummyPost("5", "erin", "Erin Patel", "Prompt: Study guide generator",
-                "Share your favourite template for turning lecture notes into concise study guides.",
-                "StudyBuddy", true, now - daysToMillis(3), 22, 0, 14);
-        addDummyPost("6", "frank", "Frank Li", "Reducing hallucinations with retrieval",
-                "Posting the workflow we use to keep responses grounded when the model has limited knowledge.",
-                "RAG", false, now - hoursToMillis(30), 31, 4, 20);
-        addDummyPost("7", "grace", "Grace Hopper", "Prompt: Lightweight code reviewer",
-                "Looking for prompts that catch style inconsistencies without overwhelming junior devs.",
-                "CodeReview", true, now - hoursToMillis(18), 40, 6, 25);
-        addDummyPost("8", "henry", "Henry Zhao", "Best datasets for benchmarking reasoning",
-                "What evaluation sets are people using to measure reasoning progress beyond GSM8K?",
-                "Benchmarks", false, now - daysToMillis(4), 19, 2, 7);
-        addDummyPost("9", "isabel", "Isabel Flores", "Prompt: Daily reflection journaling partner",
-                "Looking for a gentle prompt to help with reflective journaling without it feeling repetitive.",
-                "Wellness", true, now - hoursToMillis(8), 24, 1, 4);
-        addDummyPost("10", "james", "James Rivera", "Streaming responses with function calling",
-                "Has anyone combined streaming outputs with function calls reliably?", "APIs", false,
-                now - hoursToMillis(2), 29, 3, 11);
-        addDummyPost("11", "kate", "Kate Andersen", "Prompt: Classroom debate facilitator",
-                "Need a prompt that helps students explore both sides of a debate constructively.",
-                "Education", true, now - daysToMillis(5), 33, 2, 16);
-        addDummyPost("12", "leo", "Leon Wu", "Quantisation tricks for edge deployment",
-                "Collected a few resources on 4-bit quantisation for running models on edge devices.",
-                "Optimization", false, now - hoursToMillis(40), 21, 5, 9);
+        });
     }
 
-    private void addDummyPost(String id,
-                              String authorId,
-                              String authorName,
-                              String title,
-                              String content,
-                              String tag,
-                              boolean isPromptPost,
-                              long createdAtMillis,
-                              int upvotes,
-                              int downvotes,
-                              int commentCount) {
-        Post post = new Post();
-        post.setId(id);
-        post.setAuthor_id(authorId);
-        post.setAuthor_name(authorName);
-        post.setTitle(title);
-        post.setContent(content);
-        post.setLlm_tag(tag);
-        post.setIs_prompt_post(isPromptPost);
-        String created = Long.toString(createdAtMillis);
-        post.setCreated_at(created);
-        post.setUpdated_at(Long.toString(createdAtMillis + hoursToMillis(1)));
-        post.setUpvotes(upvotes);
-        post.setDownvotes(downvotes);
-        post.setComment_count(commentCount);
-        synchronized (SHARED_POSTS) {
-            SHARED_POSTS.add(post);
-        }
+    /**
+     * Get prompt posts
+     */
+    public void fetchPromptPosts(String sort,
+                                  Integer limit,
+                                  Integer offset,
+                                  Callback<PostsResult> callback) {
+        executorService.execute(() -> {
+            try {
+                retrofit2.Call<ApiService.PostsResponse> call = apiService.getPromptPosts(
+                    sort != null ? sort : "newest",
+                    limit != null ? limit : 50,
+                    offset != null ? offset : 0
+                );
+                
+                Response<ApiService.PostsResponse> response = call.execute();
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiService.PostsResponse postsResponse = response.body();
+                    List<Post> posts = postsResponse.posts != null ? postsResponse.posts : new ArrayList<>();
+                    int count = postsResponse.count;
+                    
+                    callback.onSuccess(new PostsResult(
+                        posts,
+                        count,
+                        limit != null ? limit : 50,
+                        offset != null ? offset : 0
+                    ));
+                } else {
+                    callback.onError("Failed to load prompt posts");
+                }
+            } catch (Exception e) {
+                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
+            }
+        });
     }
 
-    private long hoursToMillis(int hours) {
-        return hours * 60L * 60L * 1000L;
-    }
-
-    private long daysToMillis(int days) {
-        return hoursToMillis(24) * days;
+    /**
+     * Get trending posts
+     */
+    public void fetchTrendingPosts(Integer k, Callback<PostsResult> callback) {
+        executorService.execute(() -> {
+            try {
+                retrofit2.Call<ApiService.PostsResponse> call = apiService.getTrendingPosts(
+                    k != null ? k : 10
+                );
+                
+                Response<ApiService.PostsResponse> response = call.execute();
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiService.PostsResponse postsResponse = response.body();
+                    List<Post> posts = postsResponse.posts != null ? postsResponse.posts : new ArrayList<>();
+                    int count = postsResponse.count;
+                    
+                    callback.onSuccess(new PostsResult(
+                        posts,
+                        count,
+                        k != null ? k : 10,
+                        0
+                    ));
+                } else {
+                    callback.onError("Failed to load trending posts");
+                }
+            } catch (Exception e) {
+                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
+            }
+        });
     }
 }

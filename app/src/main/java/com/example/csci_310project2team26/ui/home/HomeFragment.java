@@ -45,15 +45,22 @@ public class HomeFragment extends Fragment {
 
         setupFilterControls();
         observeViewModel();
+
+        return root;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reload posts when fragment becomes visible (e.g., returning from post detail or create post)
+        // HomeFragment shows normal posts (not prompt posts)
         postsViewModel.loadPosts(
                 postsViewModel.getCurrentSort(),
                 postsViewModel.getCurrentQuery(),
                 resolveLimit(),
                 resolveOffset(),
-                postsViewModel.getCurrentIsPromptPost()
+                false  // Explicitly set to false for normal posts
         );
-
-        return root;
     }
 
     private void setupFilterControls() {
@@ -92,7 +99,7 @@ public class HomeFragment extends Fragment {
                         query,
                         resolveLimit(),
                         resolveOffset(),
-                        postsViewModel.getCurrentIsPromptPost()
+                        false  // Explicitly set to false for normal posts
                 );
             }
         };
@@ -111,7 +118,7 @@ public class HomeFragment extends Fragment {
                             query,
                             resolveLimit(),
                             resolveOffset(),
-                            postsViewModel.getCurrentIsPromptPost()
+                            false  // Explicitly set to false for normal posts
                     );
                 }
             }

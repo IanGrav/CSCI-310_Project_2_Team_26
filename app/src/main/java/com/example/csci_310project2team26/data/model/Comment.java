@@ -1,14 +1,33 @@
 package com.example.csci_310project2team26.data.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Comment {
+    @SerializedName("id")
     private String id;
+    
+    @SerializedName("post_id")
     private String post_id;
+    
+    @SerializedName("author_id")
     private String author_id;
+    
+    @SerializedName("author_name")
     private String author_name;
+    
+    @SerializedName("text")
     private String text;
+    
+    @SerializedName("created_at")
     private String created_at;
+    
+    @SerializedName("updated_at")
     private String updated_at;
+    
+    @SerializedName("upvotes")
     private int upvotes;
+    
+    @SerializedName("downvotes")
     private int downvotes;
 
     public Comment() {}

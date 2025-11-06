@@ -12,6 +12,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
@@ -61,7 +62,6 @@ public interface ApiService {
     @FormUrlEncoded
     Call<Void> createProfile(
         @Header("Authorization") String token,
-        @Field("user_id") String userId,
         @Field("affiliation") String affiliation,
         @Field("birth_date") String birthDate,
         @Field("bio") String bio,
@@ -89,7 +89,6 @@ public interface ApiService {
     @FormUrlEncoded
     Call<Void> resetPassword(
         @Header("Authorization") String token,
-        @Field("user_id") String userId,
         @Field("current_password") String currentPassword,
         @Field("new_password") String newPassword
     );
@@ -101,6 +100,26 @@ public interface ApiService {
         @Query("limit") Integer limit,
         @Query("offset") Integer offset,
         @Query("is_prompt_post") Boolean isPromptPost
+    );
+
+    @GET("api/posts/prompts")
+    Call<PostsResponse> getPromptPosts(
+        @Query("sort") String sort,
+        @Query("limit") Integer limit,
+        @Query("offset") Integer offset
+    );
+
+    @GET("api/posts/trending")
+    Call<PostsResponse> getTrendingPosts(
+        @Query("k") Integer k
+    );
+
+    @GET("api/posts/search")
+    Call<PostsResponse> searchPosts(
+        @Query("q") String query,
+        @Query("search_type") String searchType,
+        @Query("limit") Integer limit,
+        @Query("offset") Integer offset
     );
 
     @GET("api/posts/{id}")
@@ -116,6 +135,23 @@ public interface ApiService {
         @Field("is_prompt_post") boolean isPromptPost
     );
 
+    @PUT("api/posts/{id}")
+    @FormUrlEncoded
+    Call<PostResponse> updatePost(
+        @Header("Authorization") String token,
+        @Path("id") String id,
+        @Field("title") String title,
+        @Field("content") String content,
+        @Field("llm_tag") String llmTag,
+        @Field("is_prompt_post") Boolean isPromptPost
+    );
+
+    @DELETE("api/posts/{id}")
+    Call<Void> deletePost(
+        @Header("Authorization") String token,
+        @Path("id") String id
+    );
+
     // Comments endpoints
     @GET("api/comments/{postId}")
     Call<CommentsResponse> getComments(@Path("postId") String postId);
@@ -128,6 +164,20 @@ public interface ApiService {
         @Field("text") String text
     );
 
+    @PUT("api/comments/{id}")
+    @FormUrlEncoded
+    Call<CommentResponse> updateComment(
+        @Header("Authorization") String token,
+        @Path("id") String id,
+        @Field("text") String text
+    );
+
+    @DELETE("api/comments/{id}")
+    Call<Void> deleteComment(
+        @Header("Authorization") String token,
+        @Path("id") String id
+    );
+
     // Votes endpoints
     @POST("api/votes/post/{postId}")
     @FormUrlEncoded
@@ -137,8 +187,31 @@ public interface ApiService {
         @Field("type") String type
     );
 
+    @POST("api/votes/comment/{commentId}")
+    @FormUrlEncoded
+    Call<VoteActionResponse> voteComment(
+        @Header("Authorization") String token,
+        @Path("commentId") String commentId,
+        @Field("type") String type
+    );
+
+    @DELETE("api/votes/post/{postId}")
+    Call<Void> removePostVote(
+        @Header("Authorization") String token,
+        @Path("postId") String postId
+    );
+
+    @DELETE("api/votes/comment/{commentId}")
+    Call<Void> removeCommentVote(
+        @Header("Authorization") String token,
+        @Path("commentId") String commentId
+    );
+
     @GET("api/votes/post/{postId}")
     Call<VoteCountsResponse> getPostVoteCounts(@Path("postId") String postId);
+
+    @GET("api/votes/comment/{commentId}")
+    Call<VoteCountsResponse> getCommentVoteCounts(@Path("commentId") String commentId);
 
     // Simple response wrappers
     class PostsResponse {

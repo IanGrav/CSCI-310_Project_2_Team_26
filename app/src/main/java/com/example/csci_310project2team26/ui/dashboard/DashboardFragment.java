@@ -44,15 +44,22 @@ public class DashboardFragment extends Fragment {
 
         setupFilterControls();
         observeViewModel();
+
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reload posts when fragment becomes visible (e.g., returning from post detail or create post)
+        // DashboardFragment shows prompt posts
         postsViewModel.loadPosts(
                 postsViewModel.getCurrentSort(),
                 postsViewModel.getCurrentQuery(),
                 resolveLimit(),
                 resolveOffset(),
-                true
+                true  // Explicitly set to true for prompt posts
         );
-
-        return binding.getRoot();
     }
 
     private void setupFilterControls() {

@@ -1,17 +1,42 @@
 package com.example.csci_310project2team26.data.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Post {
+    @SerializedName("id")
     private String id;
+    
+    @SerializedName("author_id")
     private String author_id;
+    
+    @SerializedName("author_name")
     private String author_name;
+    
+    @SerializedName("title")
     private String title;
+    
+    @SerializedName("content")
     private String content;
+    
+    @SerializedName("llm_tag")
     private String llm_tag;
+    
+    @SerializedName("is_prompt_post")
     private boolean is_prompt_post;
+    
+    @SerializedName("created_at")
     private String created_at;
+    
+    @SerializedName("updated_at")
     private String updated_at;
+    
+    @SerializedName("upvotes")
     private int upvotes;
+    
+    @SerializedName("downvotes")
     private int downvotes;
+    
+    @SerializedName("comment_count")
     private int comment_count;
 
     public Post() {}
