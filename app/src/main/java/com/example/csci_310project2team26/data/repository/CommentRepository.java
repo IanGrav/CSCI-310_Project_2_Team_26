@@ -69,12 +69,13 @@ public class CommentRepository {
         }
     }
 
+    private static final Map<String, List<Comment>> SHARED_COMMENTS = Collections.synchronizedMap(new HashMap<>());
+    private static boolean seeded = false;
+
     private final ExecutorService executorService;
-    private final Map<String, List<Comment>> commentsByPost;
 
     public CommentRepository() {
         this.executorService = Executors.newSingleThreadExecutor();
-        this.commentsByPost = Collections.synchronizedMap(new HashMap<>());
         seedDummyComments();
     }
 
@@ -148,11 +149,70 @@ public class CommentRepository {
         });
     }
 
+    public void fetchCommentsByUser(String userId, Callback<List<Comment>> callback) {
+        executorService.execute(() -> {
+            if (userId == null || userId.trim().isEmpty()) {
+                callback.onSuccess(new ArrayList<>());
+                return;
+            }
+            List<Comment> results = new ArrayList<>();
+            synchronized (SHARED_COMMENTS) {
+                for (List<Comment> comments : SHARED_COMMENTS.values()) {
+                    synchronized (comments) {
+                        for (Comment comment : comments) {
+                            if (userId.equals(comment.getAuthor_id())) {
+                                results.add(copyComment(comment));
+                            }
+                        }
+                    }
+                }
+            }
+            callback.onSuccess(results);
+        });
+    }
+
+    public void getCommentById(String postId,
+                               String commentId,
+                               Callback<Comment> callback) {
+        executorService.execute(() -> {
+            List<Comment> comments = getOrCreateComments(postId);
+            synchronized (comments) {
+                for (Comment comment : comments) {
+                    if (comment.getId().equals(commentId)) {
+                        callback.onSuccess(copyComment(comment));
+                        return;
+                    }
+                }
+            }
+            callback.onError("Comment not found");
+        });
+    }
+
+    public void updateComment(String postId,
+                              String commentId,
+                              String newText,
+                              Callback<Comment> callback) {
+        executorService.execute(() -> {
+            List<Comment> comments = getOrCreateComments(postId);
+            synchronized (comments) {
+                for (Comment comment : comments) {
+                    if (comment.getId().equals(commentId)) {
+                        comment.setText(newText);
+                        comment.setUpdated_at(Long.toString(System.currentTimeMillis()));
+                        callback.onSuccess(copyComment(comment));
+                        return;
+                    }
+                }
+            }
+            callback.onError("Comment not found");
+        });
+    }
+
     private List<Comment> getOrCreateComments(String postId) {
-        List<Comment> list = commentsByPost.get(postId);
+        List<Comment> list = SHARED_COMMENTS.get(postId);
         if (list == null) {
             list = Collections.synchronizedList(new ArrayList<>());
-            commentsByPost.put(postId, list);
+            SHARED_COMMENTS.put(postId, list);
         }
         return list;
     }
@@ -183,6 +243,12 @@ public class CommentRepository {
     }
 
     private void seedDummyComments() {
+        synchronized (SHARED_COMMENTS) {
+            if (seeded) {
+                return;
+            }
+            seeded = true;
+        }
         long now = System.currentTimeMillis();
         addDummyComment("1", "c1", "olivia", "Olivia Perez",
                 "Love the structure you suggested for summarising. The bullet hierarchy is clutch!",

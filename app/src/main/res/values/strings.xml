@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">CSCI-310 Project 2 Team 26</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_dashboard">Prompts</string>
+    <string name="title_notifications">Activity</string>
 
     <!-- NEW STRINGS FOR AUTHENTICATION AND PROFILE - ADD THESE BELOW -->
 
@@ -101,6 +101,39 @@
     <string name="ic_calendar">Calendar icon</string>
     <string name="ic_info">Info icon</string>
     <string name="ic_star">Star icon</string>
+
+    <string name="menu_profile_settings">Profile</string>
+    <string name="profile_settings_title">Profile Settings</string>
+    <string name="profile_settings_heading_non_editable">Basic information</string>
+    <string name="profile_settings_heading_editable">Update your details</string>
+    <string name="profile_settings_save">Save changes</string>
+    <string name="profile_settings_reset_password">Reset password</string>
+    <string name="profile_settings_current_password">Current password</string>
+    <string name="profile_settings_new_password">New password</string>
+    <string name="profile_settings_reset_success">Password reset email sent!</string>
+    <string name="profile_settings_reset_error">Unable to reset password</string>
+    <string name="post_detail_add_comment">Write a comment</string>
+    <string name="title_create_post">Create Post</string>
+    <string name="create_post_title_hint">Post title</string>
+    <string name="create_post_body_hint">Share your thoughts</string>
+    <string name="create_post_tag_hint">Tag (e.g. GPT-4)</string>
+    <string name="create_post_is_prompt">Is this a prompt post?</string>
+    <string name="create_post_submit">Publish</string>
+    <string name="create_post_success">Post created!</string>
+    <string name="create_post_error">Unable to create post</string>
+    <string name="title_edit_post">Edit Post</string>
+    <string name="edit_post_save">Save changes</string>
+    <string name="edit_post_success">Post updated!</string>
+    <string name="edit_post_error">Unable to update post</string>
+    <string name="title_edit_comment">Edit Comment</string>
+    <string name="edit_comment_hint">Update your comment</string>
+    <string name="edit_comment_save">Save comment</string>
+    <string name="edit_comment_success">Comment updated!</string>
+    <string name="edit_comment_error">Unable to update comment</string>
+    <string name="user_activity_empty_state">You haven’t posted or commented yet.</string>
+    <string name="user_activity_post_label">Post</string>
+    <string name="user_activity_comment_label">Comment</string>
+    <string name="title_create_post_nav">Create</string>
 
     <!-- Home feed -->
     <string name="search_posts_hint">Search posts</string>
