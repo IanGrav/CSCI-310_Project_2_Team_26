@@ -37,8 +37,7 @@ public class TrendingPostsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         trendingViewModel = new ViewModelProvider(this).get(TrendingPostsViewModel.class);
-        postsAdapter = new PostsAdapter();
-        postsAdapter.setOnPostClickListener(post -> {
+        postsAdapter = new PostsAdapter(post -> {
             if (post != null && post.getId() != null && binding != null) {
                 Bundle args = new Bundle();
                 args.putString("postId", post.getId());
