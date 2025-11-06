@@ -90,14 +90,26 @@ public class UserActivityAdapter extends ListAdapter<UserActivityItem, UserActiv
     private static final DiffUtil.ItemCallback<UserActivityItem> DIFF_CALLBACK = new DiffUtil.ItemCallback<UserActivityItem>() {
         @Override
         public boolean areItemsTheSame(@NonNull UserActivityItem oldItem, @NonNull UserActivityItem newItem) {
-            return oldItem.getId().equals(newItem.getId());
+            String oldId = oldItem != null ? oldItem.getId() : null;
+            String newId = newItem != null ? newItem.getId() : null;
+            if (oldId == null || newId == null) {
+                return false;
+            }
+            return oldId.equals(newId);
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull UserActivityItem oldItem, @NonNull UserActivityItem newItem) {
+            if (oldItem == null || newItem == null) {
+                return false;
+            }
+            String oldTitle = oldItem.getTitle() != null ? oldItem.getTitle() : "";
+            String newTitle = newItem.getTitle() != null ? newItem.getTitle() : "";
+            String oldSubtitle = oldItem.getSubtitle() != null ? oldItem.getSubtitle() : "";
+            String newSubtitle = newItem.getSubtitle() != null ? newItem.getSubtitle() : "";
             return oldItem.getTimestamp() == newItem.getTimestamp()
-                    && oldItem.getTitle().equals(newItem.getTitle())
-                    && oldItem.getSubtitle().equals(newItem.getSubtitle())
+                    && oldTitle.equals(newTitle)
+                    && oldSubtitle.equals(newSubtitle)
                     && oldItem.getType() == newItem.getType();
         }
     };

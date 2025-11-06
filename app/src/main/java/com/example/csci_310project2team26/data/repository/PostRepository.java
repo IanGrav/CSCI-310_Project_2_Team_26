@@ -265,13 +265,22 @@ public class PostRepository {
                 
                 if (response.isSuccessful() && response.body() != null) {
                     ApiService.VoteActionResponse voteResponse = response.body();
+                    // When action is "removed", type might be null
+                    String resultType = voteResponse.type != null ? voteResponse.type : 
+                                      ("removed".equals(voteResponse.action) ? null : type);
                     callback.onSuccess(new VoteActionResult(
                         voteResponse.message != null ? voteResponse.message : "Vote recorded",
                         voteResponse.action != null ? voteResponse.action : "created",
-                        voteResponse.type != null ? voteResponse.type : type
+                        resultType
                     ));
                 } else {
-                    callback.onError("Failed to vote on post");
+                    String errorMsg = "Failed to vote on post";
+                    if (response.code() == 401) {
+                        errorMsg = "Authentication required";
+                    } else if (response.code() == 404) {
+                        errorMsg = "Post not found";
+                    }
+                    callback.onError(errorMsg);
                 }
             } catch (Exception e) {
                 callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");

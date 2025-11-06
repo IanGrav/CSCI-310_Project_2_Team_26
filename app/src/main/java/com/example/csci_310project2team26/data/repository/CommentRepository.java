@@ -171,20 +171,27 @@ public class CommentRepository {
                     fetchComments(postId, new Callback<CommentsResult>() {
                         @Override
                         public void onSuccess(CommentsResult result) {
+                            if (result == null || result.getComments() == null) {
+                                callback.onError("Failed to fetch comments after voting");
+                                return;
+                            }
                             // Find the updated comment
                             Comment updatedComment = null;
                             for (Comment comment : result.getComments()) {
-                                if (comment.getId().equals(commentId)) {
+                                if (comment != null && comment.getId() != null && comment.getId().equals(commentId)) {
                                     updatedComment = comment;
                                     break;
                                 }
                             }
                             
                             if (updatedComment != null) {
+                                // When action is "removed", type might be null
+                                String resultType = voteResponse.type != null ? voteResponse.type : 
+                                                  ("removed".equals(voteResponse.action) ? null : type);
                                 callback.onSuccess(new VoteResult(
                                     voteResponse.message != null ? voteResponse.message : "Vote recorded",
                                     voteResponse.action != null ? voteResponse.action : "created",
-                                    voteResponse.type != null ? voteResponse.type : type,
+                                    resultType,
                                     updatedComment
                                 ));
                             } else {

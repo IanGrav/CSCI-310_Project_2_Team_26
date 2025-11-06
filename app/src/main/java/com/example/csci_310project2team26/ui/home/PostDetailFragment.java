@@ -49,7 +49,12 @@ public class PostDetailFragment extends Fragment {
 
         commentsAdapter = new CommentsAdapter();
         commentsAdapter.setOnCommentVoteListener((comment, type) -> {
-            if (postId != null && comment != null) {
+            if (postId != null && comment != null && comment.getId() != null && !comment.getId().isEmpty()) {
+                // Check if already voting to prevent rapid clicks
+                Boolean isVoting = commentsViewModel.getLoading().getValue();
+                if (Boolean.TRUE.equals(isVoting)) {
+                    return; // Already processing a vote
+                }
                 commentsViewModel.voteOnComment(postId, comment.getId(), type);
             }
         });
@@ -60,10 +65,14 @@ public class PostDetailFragment extends Fragment {
             postId = getArguments().getString("postId");
         }
 
-        if (postId != null) {
-            loadPost(postId);
-            commentsViewModel.loadComments(postId);
+        if (postId == null || postId.isEmpty()) {
+            Toast.makeText(requireContext(), "Post ID is missing", Toast.LENGTH_LONG).show();
+            requireActivity().onBackPressed();
+            return;
         }
+
+        loadPost(postId);
+        commentsViewModel.loadComments(postId);
 
         binding.upvoteButton.setOnClickListener(v -> vote("up"));
         binding.downvoteButton.setOnClickListener(v -> vote("down"));
@@ -75,25 +84,31 @@ public class PostDetailFragment extends Fragment {
 
     private void observeViewModel() {
         commentsViewModel.getComments().observe(getViewLifecycleOwner(), list -> {
+            if (binding == null) return;
             commentsAdapter.submitList(list);
             displayedCommentCount = list != null ? list.size() : 0;
             updateCommentCountText(displayedCommentCount);
         });
         commentsViewModel.getError().observe(getViewLifecycleOwner(), err -> {
-            if (err != null) Toast.makeText(requireContext(), err, Toast.LENGTH_LONG).show();
+            if (err != null && binding != null && getContext() != null) {
+                Toast.makeText(getContext(), err, Toast.LENGTH_LONG).show();
+            }
         });
         commentsViewModel.isPostingComment().observe(getViewLifecycleOwner(), posting -> {
+            if (binding == null) return;
             boolean inFlight = Boolean.TRUE.equals(posting);
             binding.addCommentButton.setEnabled(!inFlight);
             binding.commentEditText.setEnabled(!inFlight);
         });
         commentsViewModel.getLatestPostedComment().observe(getViewLifecycleOwner(), comment -> {
-            if (comment == null) return;
+            if (comment == null || binding == null) return;
             binding.commentEditText.setText("");
             // Comments will be reloaded automatically by the ViewModel
             // Scroll to top after a brief delay to allow RecyclerView to update
             binding.commentsRecyclerView.post(() -> {
-                binding.commentsRecyclerView.scrollToPosition(0);
+                if (binding != null) {
+                    binding.commentsRecyclerView.scrollToPosition(0);
+                }
             });
         });
     }
@@ -102,10 +117,13 @@ public class PostDetailFragment extends Fragment {
         postRepository.getPostById(id, new PostRepository.Callback<Post>() {
             @Override
             public void onSuccess(Post post) {
-                binding.titleTextView.setText(post.getTitle());
-                binding.contentTextView.setText(post.getContent());
+                if (binding == null || getContext() == null) {
+                    return;
+                }
+                binding.titleTextView.setText(post.getTitle() != null ? post.getTitle() : "");
+                binding.contentTextView.setText(post.getContent() != null ? post.getContent() : "");
 
-                Resources resources = requireContext().getResources();
+                Resources resources = getResources();
                 String author = post.getAuthor_name() != null && !post.getAuthor_name().isEmpty()
                         ? post.getAuthor_name()
                         : resources.getString(R.string.post_meta_unknown_author);
@@ -139,39 +157,69 @@ public class PostDetailFragment extends Fragment {
 
             @Override
             public void onError(String error) {
-                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show();
+                if (binding == null || getContext() == null) {
+                    return;
+                }
+                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
             }
         });
     }
 
     private void vote(String type) {
-        if (postId == null) return;
+        if (postId == null || binding == null) return;
+        
+        // Disable buttons to prevent rapid clicks
+        binding.upvoteButton.setEnabled(false);
+        binding.downvoteButton.setEnabled(false);
+        
         postRepository.votePost(postId, type, new PostRepository.Callback<PostRepository.VoteActionResult>() {
             @Override
             public void onSuccess(PostRepository.VoteActionResult result) {
-                Toast.makeText(requireContext(), "Voted " + result.getType(), Toast.LENGTH_SHORT).show();
+                if (binding == null || getContext() == null) {
+                    return;
+                }
+                // Re-enable buttons
+                binding.upvoteButton.setEnabled(true);
+                binding.downvoteButton.setEnabled(true);
+                
+                String typeStr = result.getType();
+                if (typeStr != null && !typeStr.isEmpty()) {
+                    Toast.makeText(getContext(), "Voted " + typeStr, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), result.getMessage() != null ? result.getMessage() : "Vote updated", Toast.LENGTH_SHORT).show();
+                }
                 loadPost(postId);
             }
 
             @Override
             public void onError(String error) {
-                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show();
+                if (binding == null || getContext() == null) {
+                    return;
+                }
+                // Re-enable buttons on error
+                binding.upvoteButton.setEnabled(true);
+                binding.downvoteButton.setEnabled(true);
+                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
             }
         });
     }
 
     private void addComment() {
-        String text = binding.commentEditText.getText().toString().trim();
+        if (binding == null || postId == null) return;
+        String text = binding.commentEditText.getText() != null 
+                ? binding.commentEditText.getText().toString().trim() 
+                : "";
         if (TextUtils.isEmpty(text)) return;
-        if (postId == null) return;
         commentsViewModel.addComment(postId, text);
     }
 
     private void focusOnCommentField() {
+        if (binding == null || getContext() == null) return;
         binding.commentEditText.requestFocus();
         binding.postDetailScrollView.post(() -> {
+            if (binding == null || getContext() == null) return;
             binding.postDetailScrollView.smoothScrollTo(0, binding.commentEditText.getBottom());
-            InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             if (imm != null) {
                 imm.showSoftInput(binding.commentEditText, InputMethodManager.SHOW_IMPLICIT);
             }
@@ -179,7 +227,8 @@ public class PostDetailFragment extends Fragment {
     }
 
     private void updateCommentCountText(int commentCount) {
-        Resources resources = requireContext().getResources();
+        if (binding == null || getContext() == null) return;
+        Resources resources = getResources();
         NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.getDefault());
         String commentsText = resources.getQuantityString(
                 R.plurals.post_comments,

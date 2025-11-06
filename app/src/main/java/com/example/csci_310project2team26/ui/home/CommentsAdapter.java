@@ -64,18 +64,21 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
         }
 
         public void bind(Comment comment, OnCommentVoteListener listener) {
-            authorTextView.setText(comment.getAuthor_name());
-            textTextView.setText(comment.getText());
+            if (comment == null) {
+                return;
+            }
+            authorTextView.setText(comment.getAuthor_name() != null ? comment.getAuthor_name() : "");
+            textTextView.setText(comment.getText() != null ? comment.getText() : "");
             upvoteCountTextView.setText(String.valueOf(Math.max(comment.getUpvotes(), 0)));
             downvoteCountTextView.setText(String.valueOf(Math.max(comment.getDownvotes(), 0)));
 
             upvoteButton.setOnClickListener(v -> {
-                if (listener != null) {
+                if (listener != null && comment.getId() != null && !comment.getId().isEmpty()) {
                     listener.onVote(comment, "up");
                 }
             });
             downvoteButton.setOnClickListener(v -> {
-                if (listener != null) {
+                if (listener != null && comment.getId() != null && !comment.getId().isEmpty()) {
                     listener.onVote(comment, "down");
                 }
             });

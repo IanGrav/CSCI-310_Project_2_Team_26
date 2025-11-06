@@ -73,28 +73,53 @@ public class CommentsViewModel extends ViewModel {
     }
 
     public void voteOnComment(String postId, String commentId, String type) {
+        if (postId == null || commentId == null || type == null) {
+            error.postValue("Invalid vote parameters");
+            return;
+        }
+        
+        loading.postValue(true);
+        error.postValue(null);
+        
         commentRepository.voteOnComment(postId, commentId, type, new CommentRepository.Callback<CommentRepository.VoteResult>() {
             @Override
             public void onSuccess(CommentRepository.VoteResult result) {
+                loading.postValue(false);
+                if (result == null || result.getComment() == null || result.getComment().getId() == null) {
+                    error.postValue("Invalid vote result");
+                    return;
+                }
+                
                 List<Comment> current = comments.getValue();
                 if (current == null) {
                     current = new ArrayList<>();
                 } else {
                     current = new ArrayList<>(current);
                 }
+                
+                String updatedCommentId = result.getComment().getId();
+                boolean found = false;
                 for (int i = 0; i < current.size(); i++) {
                     Comment item = current.get(i);
-                    if (item.getId().equals(result.getComment().getId())) {
+                    if (item != null && item.getId() != null && item.getId().equals(updatedCommentId)) {
                         current.set(i, result.getComment());
+                        found = true;
                         break;
                     }
                 }
-                comments.postValue(current);
+                
+                if (!found) {
+                    // Comment not found in list, reload all comments
+                    loadComments(postId);
+                } else {
+                    comments.postValue(current);
+                }
             }
 
             @Override
             public void onError(String err) {
-                error.postValue(err);
+                loading.postValue(false);
+                error.postValue(err != null ? err : "Failed to vote on comment");
             }
         });
     }

@@ -39,10 +39,13 @@ public class EditCommentFragment extends Fragment {
         binding.saveCommentButton.setOnClickListener(v -> onSaveClicked());
         observeViewModel();
 
-        if (!TextUtils.isEmpty(postId) && !TextUtils.isEmpty(commentId)) {
-            viewModel.loadComment(postId, commentId);
+        if (TextUtils.isEmpty(postId) || TextUtils.isEmpty(commentId)) {
+            Toast.makeText(requireContext(), "Post ID or Comment ID is missing", Toast.LENGTH_LONG).show();
+            requireActivity().onBackPressed();
+            return binding.getRoot();
         }
 
+        viewModel.loadComment(postId, commentId);
         return binding.getRoot();
     }
 

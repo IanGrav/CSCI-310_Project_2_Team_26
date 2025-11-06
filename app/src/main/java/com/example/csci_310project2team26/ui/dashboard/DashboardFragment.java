@@ -146,6 +146,10 @@ public class DashboardFragment extends Fragment {
     }
 
     private void onPostClicked(Post post) {
+        if (post == null || post.getId() == null || post.getId().isEmpty()) {
+            Toast.makeText(requireContext(), "Unable to open post", Toast.LENGTH_SHORT).show();
+            return;
+        }
         Bundle args = new Bundle();
         args.putString("postId", post.getId());
         Navigation.findNavController(binding.getRoot()).navigate(R.id.postDetailFragment, args);

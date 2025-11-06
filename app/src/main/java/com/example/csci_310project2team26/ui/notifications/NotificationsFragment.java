@@ -68,15 +68,30 @@ public class NotificationsFragment extends Fragment {
     }
 
     private void onActivityClicked(UserActivityItem item) {
+        if (item == null) {
+            Toast.makeText(requireContext(), "Unable to open activity", Toast.LENGTH_SHORT).show();
+            return;
+        }
         Bundle args = new Bundle();
         switch (item.getType()) {
             case POST:
-                args.putString("postId", item.getPostId());
+                String postId = item.getPostId();
+                if (postId == null || postId.isEmpty()) {
+                    Toast.makeText(requireContext(), "Post ID is missing", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                args.putString("postId", postId);
                 Navigation.findNavController(binding.getRoot()).navigate(R.id.editPostFragment, args);
                 break;
             case COMMENT:
-                args.putString("postId", item.getPostId());
-                args.putString("commentId", item.getId());
+                String commentPostId = item.getPostId();
+                String commentId = item.getId();
+                if (commentPostId == null || commentPostId.isEmpty() || commentId == null || commentId.isEmpty()) {
+                    Toast.makeText(requireContext(), "Post ID or Comment ID is missing", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                args.putString("postId", commentPostId);
+                args.putString("commentId", commentId);
                 Navigation.findNavController(binding.getRoot()).navigate(R.id.editCommentFragment, args);
                 break;
         }

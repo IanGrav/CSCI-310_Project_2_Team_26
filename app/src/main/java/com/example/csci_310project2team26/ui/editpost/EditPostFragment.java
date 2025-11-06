@@ -37,10 +37,13 @@ public class EditPostFragment extends Fragment {
         binding.savePostButton.setOnClickListener(v -> onSaveClicked());
         observeViewModel();
 
-        if (!TextUtils.isEmpty(postId)) {
-            viewModel.loadPost(postId);
+        if (TextUtils.isEmpty(postId)) {
+            Toast.makeText(requireContext(), "Post ID is missing", Toast.LENGTH_LONG).show();
+            requireActivity().onBackPressed();
+            return binding.getRoot();
         }
 
+        viewModel.loadPost(postId);
         return binding.getRoot();
     }
 

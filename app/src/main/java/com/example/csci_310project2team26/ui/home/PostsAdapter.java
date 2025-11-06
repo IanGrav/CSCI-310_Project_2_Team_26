@@ -46,9 +46,14 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
         Post post = items.get(position);
+        if (post == null) {
+            return;
+        }
         holder.bind(post);
         holder.itemView.setOnClickListener(v -> {
-            if (clickListener != null) clickListener.onPostClick(post);
+            if (clickListener != null && post.getId() != null && !post.getId().isEmpty()) {
+                clickListener.onPostClick(post);
+            }
         });
     }
 
@@ -78,8 +83,11 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
         }
 
         public void bind(Post post) {
+            if (post == null) {
+                return;
+            }
             Resources resources = itemView.getResources();
-            titleTextView.setText(post.getTitle());
+            titleTextView.setText(post.getTitle() != null ? post.getTitle() : "");
 
             String author = post.getAuthor_name() != null && !post.getAuthor_name().isEmpty()
                     ? post.getAuthor_name()
@@ -91,7 +99,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
             tagTextView.setText(tagLabel);
             authorTextView.setText(resources.getString(R.string.post_author_format, author));
 
-            contentTextView.setText(post.getContent());
+            contentTextView.setText(post.getContent() != null ? post.getContent() : "");
 
             int upvotes = Math.max(post.getUpvotes(), 0);
             int downvotes = Math.max(post.getDownvotes(), 0);
