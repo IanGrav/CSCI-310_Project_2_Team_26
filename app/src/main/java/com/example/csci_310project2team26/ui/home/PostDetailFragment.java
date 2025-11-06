@@ -1,5 +1,6 @@
 package com.example.csci_310project2team26.ui.home;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -7,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -65,6 +67,7 @@ public class PostDetailFragment extends Fragment {
 
         binding.upvoteButton.setOnClickListener(v -> vote("up"));
         binding.downvoteButton.setOnClickListener(v -> vote("down"));
+        binding.commentButton.setOnClickListener(v -> focusOnCommentField());
         binding.addCommentButton.setOnClickListener(v -> addComment());
 
         observeViewModel();
@@ -158,6 +161,17 @@ public class PostDetailFragment extends Fragment {
         if (TextUtils.isEmpty(text)) return;
         if (postId == null) return;
         commentsViewModel.addComment(postId, text);
+    }
+
+    private void focusOnCommentField() {
+        binding.commentEditText.requestFocus();
+        binding.postDetailScrollView.post(() -> {
+            binding.postDetailScrollView.smoothScrollTo(0, binding.commentEditText.getBottom());
+            InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(binding.commentEditText, InputMethodManager.SHOW_IMPLICIT);
+            }
+        });
     }
 
     private void updateCommentCountText(int commentCount) {

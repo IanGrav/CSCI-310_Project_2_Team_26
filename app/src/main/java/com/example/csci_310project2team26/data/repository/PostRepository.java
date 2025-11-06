@@ -76,12 +76,13 @@ public class PostRepository {
         }
     }
 
+    private static final List<Post> SHARED_POSTS = Collections.synchronizedList(new ArrayList<>());
+    private static boolean seeded = false;
+
     private final ExecutorService executorService;
-    private final List<Post> allPosts;
 
     public PostRepository() {
         this.executorService = Executors.newSingleThreadExecutor();
-        this.allPosts = Collections.synchronizedList(new ArrayList<>());
         seedDummyPosts();
     }
 
@@ -125,8 +126,8 @@ public class PostRepository {
     public void getPostById(String postId, Callback<Post> callback) {
         executorService.execute(() -> {
             Post post = null;
-            synchronized (allPosts) {
-                for (Post candidate : allPosts) {
+            synchronized (SHARED_POSTS) {
+                for (Post candidate : SHARED_POSTS) {
                     if (candidate.getId().equals(postId)) {
                         post = copyPost(candidate);
                         break;
@@ -168,8 +169,8 @@ public class PostRepository {
                 newPost.setDownvotes(0);
                 newPost.setComment_count(0);
 
-                synchronized (allPosts) {
-                    allPosts.add(0, newPost);
+                synchronized (SHARED_POSTS) {
+                    SHARED_POSTS.add(0, newPost);
                 }
 
                 callback.onSuccess(copyPost(newPost));
@@ -181,8 +182,8 @@ public class PostRepository {
 
     public void votePost(String postId, String type, Callback<VoteActionResult> callback) {
         executorService.execute(() -> {
-            synchronized (allPosts) {
-                for (Post post : allPosts) {
+            synchronized (SHARED_POSTS) {
+                for (Post post : SHARED_POSTS) {
                     if (post.getId().equals(postId)) {
                         String normalized = type != null ? type.toLowerCase(Locale.US) : "";
                         switch (normalized) {
@@ -198,6 +199,48 @@ public class PostRepository {
                                 callback.onError("Invalid vote type");
                                 return;
                         }
+                    }
+                }
+            }
+            callback.onError("Post not found");
+        });
+    }
+
+    public void fetchPostsForUser(String userId, Callback<List<Post>> callback) {
+        executorService.execute(() -> {
+            if (userId == null || userId.trim().isEmpty()) {
+                callback.onSuccess(new ArrayList<>());
+                return;
+            }
+            List<Post> results = new ArrayList<>();
+            synchronized (SHARED_POSTS) {
+                for (Post post : SHARED_POSTS) {
+                    if (userId.equals(post.getAuthor_id())) {
+                        results.add(copyPost(post));
+                    }
+                }
+            }
+            callback.onSuccess(results);
+        });
+    }
+
+    public void updatePost(String postId,
+                           String title,
+                           String content,
+                           String llmTag,
+                           boolean isPromptPost,
+                           Callback<Post> callback) {
+        executorService.execute(() -> {
+            synchronized (SHARED_POSTS) {
+                for (Post post : SHARED_POSTS) {
+                    if (post.getId().equals(postId)) {
+                        post.setTitle(title);
+                        post.setContent(content);
+                        post.setLlm_tag(llmTag);
+                        post.setIs_prompt_post(isPromptPost);
+                        post.setUpdated_at(Long.toString(System.currentTimeMillis()));
+                        callback.onSuccess(copyPost(post));
+                        return;
                     }
                 }
             }
@@ -228,8 +271,8 @@ public class PostRepository {
                                   String sort,
                                   Boolean isPromptPost) {
         List<Post> working;
-        synchronized (allPosts) {
-            working = new ArrayList<>(allPosts);
+        synchronized (SHARED_POSTS) {
+            working = new ArrayList<>(SHARED_POSTS);
         }
 
         if (isPromptPost != null) {
@@ -331,8 +374,11 @@ public class PostRepository {
     }
 
     private void seedDummyPosts() {
-        if (!allPosts.isEmpty()) {
-            return;
+        synchronized (SHARED_POSTS) {
+            if (seeded || !SHARED_POSTS.isEmpty()) {
+                return;
+            }
+            seeded = true;
         }
         long now = System.currentTimeMillis();
         addDummyPost("1", "alice", "Alice Johnson", "Why GPT-4 excels at summarisation",
@@ -398,7 +444,9 @@ public class PostRepository {
         post.setUpvotes(upvotes);
         post.setDownvotes(downvotes);
         post.setComment_count(commentCount);
-        allPosts.add(post);
+        synchronized (SHARED_POSTS) {
+            SHARED_POSTS.add(post);
+        }
     }
 
     private long hoursToMillis(int hours) {
