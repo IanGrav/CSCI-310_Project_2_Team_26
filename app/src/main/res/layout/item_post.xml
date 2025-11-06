@@ -25,12 +25,24 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/metaTextView"
+            android:id="@+id/tagTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
+            android:textAllCaps="true"
+            android:textColor="@color/primary"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="#GPT-4" />
+
+        <TextView
+            android:id="@+id/authorTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:textColor="@color/secondary_text"
-            android:textSize="12sp" />
+            android:textSize="13sp"
+            tools:text="By Alice Johnson" />
 
         <TextView
             android:id="@+id/contentTextView"
@@ -63,31 +75,29 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:drawablePadding="4dp"
                 android:textAppearance="?attr/textAppearanceCaption"
                 android:textColor="@color/primary_text"
                 tools:text="1.2k upvotes" />
-
-            <TextView
-                android:id="@+id/scoreTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:textAppearance="?attr/textAppearanceCaption"
-                android:textColor="@color/primary_text"
-                android:textStyle="bold"
-                tools:text="Score: 950" />
 
             <TextView
                 android:id="@+id/downvoteTextView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="end"
+                android:gravity="center"
                 android:textAppearance="?attr/textAppearanceCaption"
                 android:textColor="@color/primary_text"
                 tools:text="23 downvotes" />
+
+            <TextView
+                android:id="@+id/commentCountTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textAppearance="?attr/textAppearanceCaption"
+                android:textColor="@color/primary_text"
+                tools:text="12 comments" />
         </LinearLayout>
 
     </LinearLayout>

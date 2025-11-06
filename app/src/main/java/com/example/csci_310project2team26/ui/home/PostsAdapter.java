@@ -57,21 +57,23 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
 
     static class PostViewHolder extends RecyclerView.ViewHolder {
         private final TextView titleTextView;
-        private final TextView metaTextView;
+        private final TextView tagTextView;
+        private final TextView authorTextView;
         private final TextView contentTextView;
         private final TextView upvoteTextView;
-        private final TextView scoreTextView;
         private final TextView downvoteTextView;
+        private final TextView commentCountTextView;
         private final NumberFormat numberFormat;
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
             titleTextView = itemView.findViewById(R.id.titleTextView);
-            metaTextView = itemView.findViewById(R.id.metaTextView);
+            tagTextView = itemView.findViewById(R.id.tagTextView);
+            authorTextView = itemView.findViewById(R.id.authorTextView);
             contentTextView = itemView.findViewById(R.id.contentTextView);
             upvoteTextView = itemView.findViewById(R.id.upvoteTextView);
-            scoreTextView = itemView.findViewById(R.id.scoreTextView);
             downvoteTextView = itemView.findViewById(R.id.downvoteTextView);
+            commentCountTextView = itemView.findViewById(R.id.commentCountTextView);
             numberFormat = NumberFormat.getIntegerInstance(Locale.getDefault());
         }
 
@@ -82,23 +84,18 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
             String author = post.getAuthor_name() != null && !post.getAuthor_name().isEmpty()
                     ? post.getAuthor_name()
                     : resources.getString(R.string.post_meta_unknown_author);
-            String tag = post.getLlm_tag() != null && !post.getLlm_tag().isEmpty()
-                    ? post.getLlm_tag()
-                    : resources.getString(R.string.post_meta_unknown_tag);
-            int commentCount = Math.max(post.getComment_count(), 0);
-            String commentsText = resources.getQuantityString(
-                    R.plurals.post_comments,
-                    commentCount,
-                    numberFormat.format(commentCount)
-            );
-            String meta = resources.getString(R.string.post_meta_format, author, tag, commentsText);
-            metaTextView.setText(meta);
+            boolean hasTag = post.getLlm_tag() != null && !post.getLlm_tag().isEmpty();
+            String tagLabel = hasTag
+                    ? resources.getString(R.string.post_tag_format, post.getLlm_tag())
+                    : resources.getString(R.string.post_tag_unknown);
+            tagTextView.setText(tagLabel);
+            authorTextView.setText(resources.getString(R.string.post_author_format, author));
 
             contentTextView.setText(post.getContent());
 
             int upvotes = Math.max(post.getUpvotes(), 0);
             int downvotes = Math.max(post.getDownvotes(), 0);
-            int score = post.getUpvotes() - post.getDownvotes();
+            int commentCount = Math.max(post.getComment_count(), 0);
 
             String upvoteText = resources.getQuantityString(
                     R.plurals.post_upvotes,
@@ -110,14 +107,15 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.PostViewHold
                     downvotes,
                     numberFormat.format(downvotes)
             );
-            String scoreText = resources.getString(
-                    R.string.post_score,
-                    numberFormat.format(score)
+            String commentsText = resources.getQuantityString(
+                    R.plurals.post_comments,
+                    commentCount,
+                    numberFormat.format(commentCount)
             );
 
             upvoteTextView.setText(upvoteText);
             downvoteTextView.setText(downvoteText);
-            scoreTextView.setText(scoreText);
+            commentCountTextView.setText(commentsText);
         }
     }
 }

@@ -263,7 +263,10 @@ public class PostRepository {
                 return contains(post.getLlm_tag(), search);
             case "full_text":
             default:
-                return contains(post.getTitle(), search) || contains(post.getContent(), search);
+                return contains(post.getTitle(), search)
+                        || contains(post.getContent(), search)
+                        || contains(post.getAuthor_name(), search)
+                        || contains(post.getLlm_tag(), search);
         }
     }
 

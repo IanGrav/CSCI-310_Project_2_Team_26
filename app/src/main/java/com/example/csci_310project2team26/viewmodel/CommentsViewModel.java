@@ -21,10 +21,14 @@ public class CommentsViewModel extends ViewModel {
     private final MutableLiveData<Boolean> loading = new MutableLiveData<>(false);
     private final MutableLiveData<String> error = new MutableLiveData<>(null);
     private final MutableLiveData<List<Comment>> comments = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<Boolean> postingComment = new MutableLiveData<>(false);
+    private final MutableLiveData<Comment> latestPostedComment = new MutableLiveData<>(null);
 
     public LiveData<Boolean> getLoading() { return loading; }
     public LiveData<String> getError() { return error; }
     public LiveData<List<Comment>> getComments() { return comments; }
+    public LiveData<Boolean> isPostingComment() { return postingComment; }
+    public LiveData<Comment> getLatestPostedComment() { return latestPostedComment; }
 
     public void loadComments(String postId) {
         loading.postValue(true);
@@ -47,23 +51,26 @@ public class CommentsViewModel extends ViewModel {
     public void addComment(String postId, String text) {
         loading.postValue(true);
         error.postValue(null);
+        latestPostedComment.postValue(null);
+        postingComment.postValue(true);
         commentRepository.createComment(postId, text, new CommentRepository.Callback<Comment>() {
             @Override
             public void onSuccess(Comment result) {
                 loading.postValue(false);
+                postingComment.postValue(false);
                 List<Comment> current = comments.getValue();
                 if (current == null) current = new ArrayList<>();
                 current.add(0, result);
                 comments.postValue(current);
+                latestPostedComment.postValue(result);
             }
 
             @Override
             public void onError(String err) {
                 loading.postValue(false);
+                postingComment.postValue(false);
                 error.postValue(err);
             }
         });
     }
 }
-
-

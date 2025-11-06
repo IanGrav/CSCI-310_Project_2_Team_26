@@ -18,11 +18,22 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/metaTextView"
+            android:id="@+id/tagTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAllCaps="true"
+            android:textColor="@color/primary"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/authorTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textSize="12sp" />
+            android:textColor="@color/secondary_text"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/contentTextView"
@@ -31,12 +42,55 @@
             android:layout_marginTop="12dp"
             android:textSize="16sp" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/divider"
+            android:alpha="0.3" />
+
+        <LinearLayout
+            android:id="@+id/countsRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:weightSum="3">
+
+            <TextView
+                android:id="@+id/upvoteCountTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="?attr/textAppearanceCaption"
+                android:textColor="@color/primary_text" />
+
+            <TextView
+                android:id="@+id/downvoteCountTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textAppearance="?attr/textAppearanceCaption"
+                android:textColor="@color/primary_text" />
+
+            <TextView
+                android:id="@+id/commentCountTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textAppearance="?attr/textAppearanceCaption"
+                android:textColor="@color/primary_text" />
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_marginTop="12dp"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/upvoteButton"
@@ -50,14 +104,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Downvote" />
-
-            <TextView
-                android:id="@+id/voteCountsTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:textSize="14sp"
-                android:text="0" />
         </LinearLayout>
 
         <TextView

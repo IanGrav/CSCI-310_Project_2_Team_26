@@ -109,9 +109,9 @@
     <string name="sort_option_top">Top score</string>
     <string name="home_empty_state">No posts match your filters yet.</string>
     <string name="post_meta_unknown_author">Unknown author</string>
-    <string name="post_meta_unknown_tag">No tag</string>
-    <string name="post_meta_format">%1$s • %2$s • %3$s</string>
-    <string name="post_score">Score: %1$s</string>
+    <string name="post_tag_format">#%1$s</string>
+    <string name="post_tag_unknown">#untagged</string>
+    <string name="post_author_format">By %1$s</string>
 
     <plurals name="post_comments">
         <item quantity="one">%1$s comment</item>
