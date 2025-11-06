@@ -18,9 +18,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.csci_310project2team26.R;
 import com.example.csci_310project2team26.data.model.Post;
-import com.example.csci_310project2team26.data.repository.PostRepository;
 import com.example.csci_310project2team26.databinding.FragmentPostDetailBinding;
 import com.example.csci_310project2team26.viewmodel.CommentsViewModel;
+import com.example.csci_310project2team26.viewmodel.PostDetailViewModel;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -29,8 +29,8 @@ public class PostDetailFragment extends Fragment {
 
     private FragmentPostDetailBinding binding;
     private CommentsViewModel commentsViewModel;
+    private PostDetailViewModel postDetailViewModel;
     private CommentsAdapter commentsAdapter;
-    private PostRepository postRepository;
     private String postId;
     private int displayedCommentCount = 0;
 
@@ -45,7 +45,7 @@ public class PostDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         commentsViewModel = new ViewModelProvider(this).get(CommentsViewModel.class);
-        postRepository = new PostRepository();
+        postDetailViewModel = new ViewModelProvider(this).get(PostDetailViewModel.class);
 
         commentsAdapter = new CommentsAdapter();
         commentsAdapter.setOnCommentVoteListener((comment, type) -> {
@@ -71,7 +71,7 @@ public class PostDetailFragment extends Fragment {
             return;
         }
 
-        loadPost(postId);
+        postDetailViewModel.loadPost(postId);
         commentsViewModel.loadComments(postId);
 
         binding.upvoteButton.setOnClickListener(v -> vote("up"));
@@ -83,6 +83,24 @@ public class PostDetailFragment extends Fragment {
     }
 
     private void observeViewModel() {
+        // Observe post data (similar to how comments are observed)
+        postDetailViewModel.getPost().observe(getViewLifecycleOwner(), post -> {
+            if (binding == null || post == null) return;
+            updatePostUI(post);
+        });
+        
+        postDetailViewModel.getLoading().observe(getViewLifecycleOwner(), loading -> {
+            if (binding == null) return;
+            // Optionally show/hide loading indicator
+        });
+        
+        postDetailViewModel.getError().observe(getViewLifecycleOwner(), err -> {
+            if (err != null && binding != null && getContext() != null) {
+                Toast.makeText(getContext(), err, Toast.LENGTH_LONG).show();
+            }
+        });
+        
+        // Observe comments
         commentsViewModel.getComments().observe(getViewLifecycleOwner(), list -> {
             if (binding == null) return;
             commentsAdapter.submitList(list);
@@ -112,57 +130,44 @@ public class PostDetailFragment extends Fragment {
             });
         });
     }
+    
+    private void updatePostUI(Post post) {
+        if (binding == null || getContext() == null || post == null) return;
+        
+        binding.titleTextView.setText(post.getTitle() != null ? post.getTitle() : "");
+        binding.contentTextView.setText(post.getContent() != null ? post.getContent() : "");
 
-    private void loadPost(String id) {
-        postRepository.getPostById(id, new PostRepository.Callback<Post>() {
-            @Override
-            public void onSuccess(Post post) {
-                if (binding == null || getContext() == null) {
-                    return;
-                }
-                binding.titleTextView.setText(post.getTitle() != null ? post.getTitle() : "");
-                binding.contentTextView.setText(post.getContent() != null ? post.getContent() : "");
+        Resources resources = getResources();
+        String author = post.getAuthor_name() != null && !post.getAuthor_name().isEmpty()
+                ? post.getAuthor_name()
+                : resources.getString(R.string.post_meta_unknown_author);
+        boolean hasTag = post.getLlm_tag() != null && !post.getLlm_tag().isEmpty();
+        String tagLabel = hasTag
+                ? resources.getString(R.string.post_tag_format, post.getLlm_tag())
+                : resources.getString(R.string.post_tag_unknown);
+        binding.tagTextView.setText(tagLabel);
+        binding.authorTextView.setText(resources.getString(R.string.post_author_format, author));
 
-                Resources resources = getResources();
-                String author = post.getAuthor_name() != null && !post.getAuthor_name().isEmpty()
-                        ? post.getAuthor_name()
-                        : resources.getString(R.string.post_meta_unknown_author);
-                boolean hasTag = post.getLlm_tag() != null && !post.getLlm_tag().isEmpty();
-                String tagLabel = hasTag
-                        ? resources.getString(R.string.post_tag_format, post.getLlm_tag())
-                        : resources.getString(R.string.post_tag_unknown);
-                binding.tagTextView.setText(tagLabel);
-                binding.authorTextView.setText(resources.getString(R.string.post_author_format, author));
+        NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.getDefault());
+        int upvotes = Math.max(post.getUpvotes(), 0);
+        int downvotes = Math.max(post.getDownvotes(), 0);
+        displayedCommentCount = Math.max(post.getComment_count(), 0);
 
-                NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.getDefault());
-                int upvotes = Math.max(post.getUpvotes(), 0);
-                int downvotes = Math.max(post.getDownvotes(), 0);
-                displayedCommentCount = Math.max(post.getComment_count(), 0);
+        String upvoteText = resources.getQuantityString(
+                R.plurals.post_upvotes,
+                upvotes,
+                numberFormat.format(upvotes)
+        );
+        String downvoteText = resources.getQuantityString(
+                R.plurals.post_downvotes,
+                downvotes,
+                numberFormat.format(downvotes)
+        );
 
-                String upvoteText = resources.getQuantityString(
-                        R.plurals.post_upvotes,
-                        upvotes,
-                        numberFormat.format(upvotes)
-                );
-                String downvoteText = resources.getQuantityString(
-                        R.plurals.post_downvotes,
-                        downvotes,
-                        numberFormat.format(downvotes)
-                );
-
-                binding.upvoteCountTextView.setText(upvoteText);
-                binding.downvoteCountTextView.setText(downvoteText);
-                updateCommentCountText(displayedCommentCount);
-            }
-
-            @Override
-            public void onError(String error) {
-                if (binding == null || getContext() == null) {
-                    return;
-                }
-                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
-            }
-        });
+        // Update vote counts - this will automatically update when post LiveData changes
+        binding.upvoteCountTextView.setText(upvoteText);
+        binding.downvoteCountTextView.setText(downvoteText);
+        updateCommentCountText(displayedCommentCount);
     }
 
     private void vote(String type) {
@@ -170,67 +175,18 @@ public class PostDetailFragment extends Fragment {
         
         // Check buttons exist before accessing
         if (binding.upvoteButton == null || binding.downvoteButton == null) {
-            Toast.makeText(getContext(), "Unable to vote", Toast.LENGTH_SHORT).show();
             return;
         }
         
-        // Disable buttons to prevent rapid clicks
-        binding.upvoteButton.setEnabled(false);
-        binding.downvoteButton.setEnabled(false);
+        // Check if already voting to prevent rapid clicks (same pattern as comment voting)
+        Boolean isVoting = postDetailViewModel.getLoading().getValue();
+        if (Boolean.TRUE.equals(isVoting)) {
+            return; // Already processing a vote
+        }
         
-        postRepository.votePost(postId, type, new PostRepository.Callback<PostRepository.VoteActionResult>() {
-            @Override
-            public void onSuccess(PostRepository.VoteActionResult result) {
-                if (binding == null || getContext() == null || postId == null) {
-                    return;
-                }
-                
-                // Re-enable buttons
-                try {
-                    binding.upvoteButton.setEnabled(true);
-                    binding.downvoteButton.setEnabled(true);
-                    
-                    // Safely get message and type
-                    String message = result != null && result.getMessage() != null 
-                            ? result.getMessage() 
-                            : "Vote updated";
-                    String typeStr = result != null ? result.getType() : null;
-                    
-                    if (typeStr != null && !typeStr.isEmpty()) {
-                        Toast.makeText(getContext(), "Voted " + typeStr, Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-                    }
-                    
-                    // Reload post to get updated vote counts
-                    loadPost(postId);
-                } catch (Exception e) {
-                    // If anything fails, at least re-enable buttons and show error
-                    if (binding != null) {
-                        binding.upvoteButton.setEnabled(true);
-                        binding.downvoteButton.setEnabled(true);
-                    }
-                    if (getContext() != null) {
-                        Toast.makeText(getContext(), "Vote updated but failed to refresh", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-
-            @Override
-            public void onError(String error) {
-                if (binding == null || getContext() == null) {
-                    return;
-                }
-                // Re-enable buttons on error
-                try {
-                    binding.upvoteButton.setEnabled(true);
-                    binding.downvoteButton.setEnabled(true);
-                    Toast.makeText(getContext(), error != null ? error : "Failed to vote", Toast.LENGTH_LONG).show();
-                } catch (Exception e) {
-                    // Ignore errors in error handler
-                }
-            }
-        });
+        // Use ViewModel to vote (same pattern as comment voting)
+        // This will automatically reload the post and update UI via LiveData
+        postDetailViewModel.voteOnPost(postId, type);
     }
 
     private void addComment() {
