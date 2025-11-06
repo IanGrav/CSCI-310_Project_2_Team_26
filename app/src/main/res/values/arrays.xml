@@ -7,4 +7,9 @@
         <item>@string/search_type_title</item>
         <item>@string/search_type_prompt_tag</item>
     </array>
+    
+    <array name="post_sort_options">
+        <item>@string/sort_option_newest</item>
+        <item>@string/sort_option_top</item>
+    </array>
 </resources>
