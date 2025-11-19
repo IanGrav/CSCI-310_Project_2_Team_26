@@ -99,10 +99,13 @@ public class NotificationsViewModel extends ViewModel {
 
         if (comments != null) {
             for (Comment comment : comments) {
-                long updated = parseTimestamp(comment.getUpdated_at());
-                String title = !TextUtils.isEmpty(comment.getText())
-                        ? truncate(comment.getText(), 80)
-                        : "(comment)";
+                long updated = parseTimestamp(comment.getCreated_at());
+                // Use title if available, otherwise use text
+                String title = !TextUtils.isEmpty(comment.getTitle())
+                        ? comment.getTitle()
+                        : (!TextUtils.isEmpty(comment.getText())
+                                ? truncate(comment.getText(), 80)
+                                : "(comment)");
                 String detail = !TextUtils.isEmpty(comment.getPost_id())
                         ? String.format(Locale.getDefault(), "Post: %s", comment.getPost_id())
                         : "";
@@ -126,10 +129,22 @@ public class NotificationsViewModel extends ViewModel {
             return 0L;
         }
         try {
-            return Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            return 0L;
+            // Try parsing as ISO 8601 date string
+            java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault());
+            format.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+            java.util.Date date = format.parse(value);
+            if (date != null) {
+                return date.getTime();
+            }
+        } catch (Exception e) {
+            // Try parsing as long timestamp
+            try {
+                return Long.parseLong(value);
+            } catch (NumberFormatException e2) {
+                return 0L;
+            }
         }
+        return 0L;
     }
 
     private String truncate(String value, int maxLength) {

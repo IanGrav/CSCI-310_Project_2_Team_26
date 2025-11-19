@@ -18,6 +18,8 @@ const getPosts = async (req, res) => {
         u.name as author_name,
         p.title,
         p.content,
+        p.prompt_section,
+        p.description_section,
         p.llm_tag,
         p.is_prompt_post,
         p.created_at,
@@ -94,6 +96,8 @@ const getPromptPosts = async (req, res) => {
         u.name as author_name,
         p.title,
         p.content,
+        p.prompt_section,
+        p.description_section,
         p.llm_tag,
         p.is_prompt_post,
         p.created_at,
@@ -154,6 +158,8 @@ const getTrendingPosts = async (req, res) => {
         u.name as author_name,
         p.title,
         p.content,
+        p.prompt_section,
+        p.description_section,
         p.llm_tag,
         p.is_prompt_post,
         p.created_at,
@@ -206,6 +212,8 @@ const searchPosts = async (req, res) => {
         u.name as author_name,
         p.title,
         p.content,
+        p.prompt_section,
+        p.description_section,
         p.llm_tag,
         p.is_prompt_post,
         p.created_at,
@@ -243,7 +251,7 @@ const searchPosts = async (req, res) => {
         break;
       case 'full_text':
       default:
-        queryText += ` (p.title ILIKE $${paramCount} OR p.content ILIKE $${paramCount++})`;
+        queryText += ` (p.title ILIKE $${paramCount} OR p.content ILIKE $${paramCount} OR p.prompt_section ILIKE $${paramCount} OR p.description_section ILIKE $${paramCount++})`;
         params.push(`%${q}%`);
         break;
     }
@@ -289,6 +297,8 @@ const getPostById = async (req, res) => {
         u.name as author_name,
         p.title,
         p.content,
+        p.prompt_section,
+        p.description_section,
         p.llm_tag,
         p.is_prompt_post,
         p.created_at,
@@ -326,22 +336,40 @@ const getPostById = async (req, res) => {
 const createPost = async (req, res) => {
   try {
     const authorId = req.user.userId;
-    const { title, content, llm_tag, is_prompt_post } = req.body;
+    const { title, content, llm_tag, is_prompt_post, prompt_section, description_section } = req.body;
 
     // Validation
-    if (!title || !content || !llm_tag) {
+    if (!title || !llm_tag) {
       return res.status(400).json({
         error: 'Missing required fields',
-        message: 'Title, content, and llm_tag are required'
+        message: 'Title and llm_tag are required'
       });
+    }
+
+    // For prompt posts, require either prompt_section or description_section
+    // For regular posts, require content
+    if (is_prompt_post) {
+      if (!prompt_section && !description_section) {
+        return res.status(400).json({
+          error: 'Missing required fields',
+          message: 'Prompt posts require either prompt_section or description_section'
+        });
+      }
+    } else {
+      if (!content) {
+        return res.status(400).json({
+          error: 'Missing required fields',
+          message: 'Content is required for regular posts'
+        });
+      }
     }
 
     // Insert post
     const insertResult = await query(
-      `INSERT INTO posts (author_id, title, content, llm_tag, is_prompt_post)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO posts (author_id, title, content, llm_tag, is_prompt_post, prompt_section, description_section)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
-      [authorId, title, content, llm_tag, is_prompt_post || false]
+      [authorId, title, content || null, llm_tag, is_prompt_post || false, prompt_section || null, description_section || null]
     );
 
     const postId = insertResult.rows[0].id;
@@ -354,6 +382,8 @@ const createPost = async (req, res) => {
         u.name as author_name,
         p.title,
         p.content,
+        p.prompt_section,
+        p.description_section,
         p.llm_tag,
         p.is_prompt_post,
         p.created_at,
@@ -387,7 +417,7 @@ const updatePost = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
-    const { title, content, llm_tag, is_prompt_post } = req.body;
+    const { title, content, llm_tag, is_prompt_post, prompt_section, description_section } = req.body;
 
     // Check if post exists and user is author
     const postCheck = await query(
@@ -429,6 +459,14 @@ const updatePost = async (req, res) => {
       updates.push(`is_prompt_post = $${paramCount++}`);
       values.push(is_prompt_post);
     }
+    if (prompt_section !== undefined) {
+      updates.push(`prompt_section = $${paramCount++}`);
+      values.push(prompt_section);
+    }
+    if (description_section !== undefined) {
+      updates.push(`description_section = $${paramCount++}`);
+      values.push(description_section);
+    }
 
     if (updates.length === 0) {
       return res.status(400).json({
@@ -442,7 +480,7 @@ const updatePost = async (req, res) => {
       UPDATE posts 
       SET ${updates.join(', ')}
       WHERE id = $${paramCount}
-      RETURNING id, author_id, title, content, llm_tag, is_prompt_post, created_at, updated_at
+      RETURNING id, author_id, title, content, prompt_section, description_section, llm_tag, is_prompt_post, created_at, updated_at
     `;
 
     const result = await query(queryText, values);

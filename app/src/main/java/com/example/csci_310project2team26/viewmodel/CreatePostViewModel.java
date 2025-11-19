@@ -26,21 +26,39 @@ public class CreatePostViewModel extends ViewModel {
         return createdPost;
     }
 
-    public void createPost(String title, String content, String tag, boolean isPrompt) {
+    public void createPost(String title, String content, String tag, boolean isPrompt, 
+                           String promptSection, String descriptionSection) {
         if (title == null || title.trim().isEmpty()) {
             error.postValue("Title is required");
             return;
         }
-        if (content == null || content.trim().isEmpty()) {
-            error.postValue("Content is required");
-            return;
+        
+        // For prompt posts, require either prompt_section or description_section
+        // For regular posts, require content
+        if (isPrompt) {
+            if ((promptSection == null || promptSection.trim().isEmpty()) && 
+                (descriptionSection == null || descriptionSection.trim().isEmpty())) {
+                error.postValue("Prompt posts require either prompt section or description section");
+                return;
+            }
+        } else {
+            if (content == null || content.trim().isEmpty()) {
+                error.postValue("Content is required");
+                return;
+            }
         }
 
         loading.postValue(true);
         error.postValue(null);
         createdPost.postValue(null);
 
-        postRepository.createPost(title.trim(), content.trim(), tag != null ? tag.trim() : "", isPrompt,
+        postRepository.createPost(
+                title.trim(), 
+                content != null ? content.trim() : "", 
+                tag != null ? tag.trim() : "", 
+                isPrompt,
+                promptSection != null ? promptSection.trim() : null,
+                descriptionSection != null ? descriptionSection.trim() : null,
                 new PostRepository.Callback<Post>() {
                     @Override
                     public void onSuccess(Post result) {

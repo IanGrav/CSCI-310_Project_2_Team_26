@@ -207,6 +207,8 @@ public class PostRepository {
                            String content,
                            String llmTag,
                            boolean isPromptPost,
+                           String promptSection,
+                           String descriptionSection,
                            Callback<Post> callback) {
         executorService.execute(() -> {
             try {
@@ -221,7 +223,9 @@ public class PostRepository {
                     title,
                     content,
                     llmTag,
-                    isPromptPost
+                    isPromptPost,
+                    promptSection,
+                    descriptionSection
                 );
                 
                 Response<ApiService.PostResponse> response = call.execute();
@@ -351,6 +355,8 @@ public class PostRepository {
                            String content,
                            String llmTag,
                            boolean isPromptPost,
+                           String promptSection,
+                           String descriptionSection,
                            Callback<Post> callback) {
         executorService.execute(() -> {
             try {
@@ -366,7 +372,9 @@ public class PostRepository {
                     title,
                     content,
                     llmTag,
-                    isPromptPost
+                    isPromptPost,
+                    promptSection,
+                    descriptionSection
                 );
                 
                 Response<ApiService.PostResponse> response = call.execute();
