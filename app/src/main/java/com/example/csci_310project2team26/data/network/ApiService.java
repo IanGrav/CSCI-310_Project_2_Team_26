@@ -4,6 +4,7 @@ import com.example.csci_310project2team26.data.model.Profile;
 import com.example.csci_310project2team26.data.repository.AuthRepository;
 import com.example.csci_310project2team26.data.model.Post;
 import com.example.csci_310project2team26.data.model.Comment;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
@@ -87,11 +88,23 @@ public interface ApiService {
     
     @POST("api/profile/reset-password")
     @FormUrlEncoded
-    Call<Void> resetPassword(
+    Call<PasswordResetResponse> resetPassword(
         @Header("Authorization") String token,
         @Field("current_password") String currentPassword,
         @Field("new_password") String newPassword
     );
+    
+    /**
+     * Response class for password reset
+     */
+    class PasswordResetResponse {
+        @SerializedName("message")
+        private String message;
+        
+        public String getMessage() {
+            return message;
+        }
+    }
 
     // Posts endpoints
     @GET("api/posts")

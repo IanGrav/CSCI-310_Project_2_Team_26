@@ -4,7 +4,11 @@ import android.net.Uri;
 
 import com.example.csci_310project2team26.data.model.Profile;
 import com.example.csci_310project2team26.data.network.ApiService;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -192,32 +196,73 @@ public class ProfileRepository {
                     return;
                 }
                 
-                Call<Void> call = apiService.resetPassword(
+                Call<ApiService.PasswordResetResponse> call = apiService.resetPassword(
                     "Bearer " + token,
                     currentPassword,
                     newPassword
                 );
-                Response<Void> response = call.execute();
+                Response<ApiService.PasswordResetResponse> response = call.execute();
                 
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null) {
                     callback.onSuccess(null);
                 } else {
-                    String errorMessage;
-                    switch (response.code()) {
-                        case 401:
-                            errorMessage = "Current password is incorrect";
-                            break;
-                        case 400:
-                            errorMessage = "New password does not meet requirements";
-                            break;
-                        default:
-                            errorMessage = "Failed to reset password: " + response.message();
-                            break;
+                    String errorMessage = "Failed to reset password";
+                    
+                    // Try to parse error message from response body
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            try {
+                                JsonObject errorJson = JsonParser.parseString(errorBody).getAsJsonObject();
+                                if (errorJson.has("message")) {
+                                    errorMessage = errorJson.get("message").getAsString();
+                                } else if (errorJson.has("error")) {
+                                    errorMessage = errorJson.get("error").getAsString();
+                                }
+                            } catch (Exception e) {
+                                // If JSON parsing fails, try to extract message manually
+                                if (errorBody.contains("\"message\"")) {
+                                    int messageIndex = errorBody.indexOf("\"message\":\"");
+                                    if (messageIndex >= 0) {
+                                        int start = messageIndex + 11;
+                                        int end = errorBody.indexOf("\"", start);
+                                        if (end > start) {
+                                            errorMessage = errorBody.substring(start, end);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (IOException e) {
+                        // Use default message based on status code
                     }
+                    
+                    // Fallback to status code-based messages if parsing failed
+                    if (errorMessage.equals("Failed to reset password")) {
+                        switch (response.code()) {
+                            case 401:
+                                errorMessage = "Current password is incorrect";
+                                break;
+                            case 400:
+                                errorMessage = "New password does not meet requirements (must be at least 6 characters)";
+                                break;
+                            case 404:
+                                errorMessage = "User not found";
+                                break;
+                            default:
+                                errorMessage = "Failed to reset password. Please try again.";
+                                break;
+                        }
+                    }
+                    
                     callback.onError(errorMessage);
                 }
             } catch (Exception e) {
-                callback.onError(e.getMessage() != null ? e.getMessage() : "Network error");
+                String errorMsg = e.getMessage();
+                if (errorMsg == null || errorMsg.isEmpty()) {
+                    errorMsg = "Network error. Please check your connection.";
+                }
+                callback.onError(errorMsg);
             }
         });
     }

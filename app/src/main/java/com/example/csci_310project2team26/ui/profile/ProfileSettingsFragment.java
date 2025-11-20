@@ -130,12 +130,17 @@ public class ProfileSettingsFragment extends Fragment {
     }
 
     private void handleError(String message) {
-        if (lastAction == Action.RESET) {
-            Toast.makeText(requireContext(), R.string.profile_settings_reset_error, Toast.LENGTH_LONG).show();
+        String displayMessage;
+        if (!TextUtils.isEmpty(message)) {
+            displayMessage = message;
         } else {
-            String displayMessage = !TextUtils.isEmpty(message) ? message : getString(R.string.profile_update_failed);
-            Toast.makeText(requireContext(), displayMessage, Toast.LENGTH_LONG).show();
+            if (lastAction == Action.RESET) {
+                displayMessage = getString(R.string.profile_settings_reset_error);
+            } else {
+                displayMessage = getString(R.string.profile_update_failed);
+            }
         }
+        Toast.makeText(requireContext(), displayMessage, Toast.LENGTH_LONG).show();
         lastAction = Action.NONE;
     }
 

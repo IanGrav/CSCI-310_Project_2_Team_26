@@ -215,18 +215,33 @@ public class ProfileViewModel extends ViewModel {
         
         executorService.execute(() -> {
             try {
-                // Validate new password
-                if (newPassword.length() < 8) {
+                // Validate inputs
+                if (currentPassword == null || currentPassword.trim().isEmpty()) {
                     profileUpdateState.postValue(new ProfileUpdateState.Error(
-                        "Password must be at least 8 characters"
+                        "Current password is required"
+                    ));
+                    return;
+                }
+                
+                if (newPassword == null || newPassword.trim().isEmpty()) {
+                    profileUpdateState.postValue(new ProfileUpdateState.Error(
+                        "New password is required"
+                    ));
+                    return;
+                }
+                
+                // Validate new password length (backend requires 6, but we'll use 6 to match)
+                if (newPassword.length() < 6) {
+                    profileUpdateState.postValue(new ProfileUpdateState.Error(
+                        "New password must be at least 6 characters"
                     ));
                     return;
                 }
                 
                 profileRepository.resetPassword(
                     userId, 
-                    currentPassword, 
-                    newPassword,
+                    currentPassword.trim(), 
+                    newPassword.trim(),
                     new ProfileRepository.Callback<Void>() {
                         @Override
                         public void onSuccess(Void result) {
@@ -235,7 +250,9 @@ public class ProfileViewModel extends ViewModel {
                         
                         @Override
                         public void onError(String error) {
-                            profileUpdateState.postValue(new ProfileUpdateState.Error(error));
+                            profileUpdateState.postValue(new ProfileUpdateState.Error(
+                                error != null ? error : "Failed to reset password"
+                            ));
                         }
                     }
                 );
