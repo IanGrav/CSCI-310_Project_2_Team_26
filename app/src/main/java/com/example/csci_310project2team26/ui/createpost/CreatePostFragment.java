@@ -29,8 +29,11 @@ public class CreatePostFragment extends Fragment {
         binding = FragmentCreatePostBinding.inflate(inflater, container, false);
         viewModel = new ViewModelProvider(this).get(CreatePostViewModel.class);
 
+        // Initialize switch state BEFORE setting listener to avoid triggering listener
         // Ensure switch starts unchecked (regular post by default)
-        binding.promptSwitch.setChecked(false);
+        if (binding.promptSwitch != null) {
+            binding.promptSwitch.setChecked(false);
+        }
         if (binding.promptSectionLayout != null) {
             binding.promptSectionLayout.setVisibility(View.GONE);
         }
@@ -38,15 +41,18 @@ public class CreatePostFragment extends Fragment {
         binding.publishButton.setOnClickListener(v -> onPublishClicked());
         
         // Show/hide prompt fields based on toggle
-        binding.promptSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (binding.promptSectionLayout != null) {
-                binding.promptSectionLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-            }
-            // For prompt posts, body is optional
-            if (binding.bodyEditText != null) {
-                binding.bodyEditText.setHint(isChecked ? "Content (optional for prompt posts)" : getString(R.string.create_post_body_hint));
-            }
-        });
+        // Set listener AFTER initializing state to avoid unwanted triggers
+        if (binding.promptSwitch != null) {
+            binding.promptSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (binding.promptSectionLayout != null) {
+                    binding.promptSectionLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+                }
+                // For prompt posts, body is optional
+                if (binding.bodyEditText != null) {
+                    binding.bodyEditText.setHint(isChecked ? "Content (optional for prompt posts)" : getString(R.string.create_post_body_hint));
+                }
+            });
+        }
         
         observeViewModel();
 
@@ -82,26 +88,32 @@ public class CreatePostFragment extends Fragment {
         String title = binding.titleEditText.getText() != null ? binding.titleEditText.getText().toString() : "";
         String body = binding.bodyEditText.getText() != null ? binding.bodyEditText.getText().toString() : "";
         String tag = binding.tagEditText.getText() != null ? binding.tagEditText.getText().toString() : "";
-        boolean isPrompt = binding.promptSwitch.isChecked();
         
-        // For regular posts, ensure prompt sections are null
-        // For prompt posts, get the values from the fields
+        // Read switch state - this determines if it's a prompt post or regular post
+        boolean isPrompt = binding.promptSwitch != null && binding.promptSwitch.isChecked();
+        
+        // Initialize prompt sections as null
         String promptSection = null;
         String descriptionSection = null;
+        
+        // Only get prompt section values if switch is explicitly checked
         if (isPrompt) {
-            // Only get prompt section values if switch is checked AND fields exist
             if (binding.promptSectionEditText != null) {
                 String promptText = binding.promptSectionEditText.getText() != null ? 
                     binding.promptSectionEditText.getText().toString() : "";
-                promptSection = promptText.trim().isEmpty() ? null : promptText.trim();
+                if (!promptText.trim().isEmpty()) {
+                    promptSection = promptText.trim();
+                }
             }
             if (binding.descriptionSectionEditText != null) {
                 String descText = binding.descriptionSectionEditText.getText() != null ? 
                     binding.descriptionSectionEditText.getText().toString() : "";
-                descriptionSection = descText.trim().isEmpty() ? null : descText.trim();
+                if (!descText.trim().isEmpty()) {
+                    descriptionSection = descText.trim();
+                }
             }
         }
-        // If isPrompt is false, promptSection and descriptionSection remain null (correct for regular posts)
+        // For regular posts (isPrompt = false), promptSection and descriptionSection remain null
 
         viewModel.createPost(title, body, tag, isPrompt, promptSection, descriptionSection);
     }

@@ -39,25 +39,26 @@ public class CreatePostViewModel extends ViewModel {
             return;
         }
         
-        // For regular posts, ensure prompt sections are null (defensive check)
-        // This prevents issues if prompt sections are accidentally passed for regular posts
-        if (!isPrompt) {
-            promptSection = null;
-            descriptionSection = null;
-        }
-        
-        // For prompt posts, require either prompt_section or description_section
-        // For regular posts, require content
+        // Validate based on post type
         if (isPrompt) {
-            // Check if prompt sections are null or empty after trimming
-            boolean hasPromptSection = promptSection != null && !promptSection.trim().isEmpty();
-            boolean hasDescriptionSection = descriptionSection != null && !descriptionSection.trim().isEmpty();
+            // For prompt posts, require either prompt_section or description_section
+            // Normalize prompt sections (trim and check if empty)
+            String trimmedPromptSection = (promptSection != null && !promptSection.trim().isEmpty()) ? promptSection.trim() : null;
+            String trimmedDescriptionSection = (descriptionSection != null && !descriptionSection.trim().isEmpty()) ? descriptionSection.trim() : null;
             
-            if (!hasPromptSection && !hasDescriptionSection) {
+            if (trimmedPromptSection == null && trimmedDescriptionSection == null) {
                 error.postValue("Prompt posts require either prompt section or description section");
                 return;
             }
+            
+            // Use trimmed versions
+            promptSection = trimmedPromptSection;
+            descriptionSection = trimmedDescriptionSection;
         } else {
+            // For regular posts, ensure prompt sections are null and require content
+            promptSection = null;
+            descriptionSection = null;
+            
             if (content == null || content.trim().isEmpty()) {
                 error.postValue("Content is required");
                 return;
