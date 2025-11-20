@@ -26,23 +26,33 @@ public class CreatePostViewModel extends ViewModel {
         return createdPost;
     }
 
-    public void createPost(String title, String content, String tag, boolean isPrompt, 
+    public void createPost(String title, String content, String tag, boolean isPrompt,
                            String promptSection, String descriptionSection) {
-        if (title == null || title.trim().isEmpty()) {
+        String trimmedTitle = title != null ? title.trim() : "";
+        String trimmedTag = tag != null ? tag.trim() : "";
+
+        if (trimmedTitle.isEmpty()) {
             error.postValue("Title is required");
             return;
         }
-        
-        // For prompt posts, require either prompt_section or description_section
-        // For regular posts, require content
+
+        if (trimmedTag.isEmpty()) {
+            error.postValue("Tag is required");
+            return;
+        }
+
+        String trimmedContent = content != null ? content.trim() : "";
+        String trimmedPrompt = promptSection != null ? promptSection.trim() : "";
+        String trimmedDescription = descriptionSection != null ? descriptionSection.trim() : "";
+
+        // For prompt posts, require at least one of prompt text or description. For regular posts, require content.
         if (isPrompt) {
-            if ((promptSection == null || promptSection.trim().isEmpty()) && 
-                (descriptionSection == null || descriptionSection.trim().isEmpty())) {
-                error.postValue("Prompt posts require either prompt section or description section");
+            if (trimmedPrompt.isEmpty() && trimmedDescription.isEmpty()) {
+                error.postValue("Prompt text or description is required for prompt posts");
                 return;
             }
         } else {
-            if (content == null || content.trim().isEmpty()) {
+            if (trimmedContent.isEmpty()) {
                 error.postValue("Content is required");
                 return;
             }
@@ -53,12 +63,12 @@ public class CreatePostViewModel extends ViewModel {
         createdPost.postValue(null);
 
         postRepository.createPost(
-                title.trim(), 
-                content != null ? content.trim() : "", 
-                tag != null ? tag.trim() : "", 
+                trimmedTitle,
+                isPrompt ? null : trimmedContent,
+                trimmedTag,
                 isPrompt,
-                promptSection != null ? promptSection.trim() : null,
-                descriptionSection != null ? descriptionSection.trim() : null,
+                isPrompt ? (trimmedPrompt.isEmpty() ? null : trimmedPrompt) : null,
+                isPrompt ? (trimmedDescription.isEmpty() ? null : trimmedDescription) : null,
                 new PostRepository.Callback<Post>() {
                     @Override
                     public void onSuccess(Post result) {
