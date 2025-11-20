@@ -174,12 +174,14 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/logoutButton"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/profile_settings_logout"
-            android:textColor="@android:color/holo_red_dark" />
+            android:textColor="@android:color/holo_red_dark"
+            app:strokeColor="@android:color/holo_red_dark"
+            app:strokeWidth="2dp" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
