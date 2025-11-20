@@ -35,20 +35,20 @@ public class CreatePostViewModel extends ViewModel {
             error.postValue("Title is required");
             return;
         }
-
-        if (trimmedTag.isEmpty()) {
+        
+        if (tag == null || tag.trim().isEmpty()) {
             error.postValue("Tag is required");
             return;
         }
 
-        String trimmedContent = content != null ? content.trim() : "";
-        String trimmedPrompt = promptSection != null ? promptSection.trim() : "";
-        String trimmedDescription = descriptionSection != null ? descriptionSection.trim() : "";
-
-        // For prompt posts, require at least one of prompt text or description. For regular posts, require content.
+        // For prompt posts, require prompt text and description. For regular posts, require content.
         if (isPrompt) {
-            if (trimmedPrompt.isEmpty() && trimmedDescription.isEmpty()) {
-                error.postValue("Prompt text or description is required for prompt posts");
+            if (promptSection == null || promptSection.trim().isEmpty()) {
+                error.postValue("Prompt text is required for prompt posts");
+                return;
+            }
+            if (descriptionSection == null || descriptionSection.trim().isEmpty()) {
+                error.postValue("Description is required for prompt posts");
                 return;
             }
         } else {
