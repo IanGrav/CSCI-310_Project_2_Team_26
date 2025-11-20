@@ -29,6 +29,12 @@ public class CreatePostFragment extends Fragment {
         binding = FragmentCreatePostBinding.inflate(inflater, container, false);
         viewModel = new ViewModelProvider(this).get(CreatePostViewModel.class);
 
+        // Ensure switch starts unchecked (regular post by default)
+        binding.promptSwitch.setChecked(false);
+        if (binding.promptSectionLayout != null) {
+            binding.promptSectionLayout.setVisibility(View.GONE);
+        }
+        
         binding.publishButton.setOnClickListener(v -> onPublishClicked());
         
         // Show/hide prompt fields based on toggle
@@ -78,14 +84,24 @@ public class CreatePostFragment extends Fragment {
         String tag = binding.tagEditText.getText() != null ? binding.tagEditText.getText().toString() : "";
         boolean isPrompt = binding.promptSwitch.isChecked();
         
+        // For regular posts, ensure prompt sections are null
+        // For prompt posts, get the values from the fields
         String promptSection = null;
         String descriptionSection = null;
-        if (isPrompt && binding.promptSectionEditText != null && binding.descriptionSectionEditText != null) {
-            promptSection = binding.promptSectionEditText.getText() != null ? 
-                binding.promptSectionEditText.getText().toString() : "";
-            descriptionSection = binding.descriptionSectionEditText.getText() != null ? 
-                binding.descriptionSectionEditText.getText().toString() : "";
+        if (isPrompt) {
+            // Only get prompt section values if switch is checked AND fields exist
+            if (binding.promptSectionEditText != null) {
+                String promptText = binding.promptSectionEditText.getText() != null ? 
+                    binding.promptSectionEditText.getText().toString() : "";
+                promptSection = promptText.trim().isEmpty() ? null : promptText.trim();
+            }
+            if (binding.descriptionSectionEditText != null) {
+                String descText = binding.descriptionSectionEditText.getText() != null ? 
+                    binding.descriptionSectionEditText.getText().toString() : "";
+                descriptionSection = descText.trim().isEmpty() ? null : descText.trim();
+            }
         }
+        // If isPrompt is false, promptSection and descriptionSection remain null (correct for regular posts)
 
         viewModel.createPost(title, body, tag, isPrompt, promptSection, descriptionSection);
     }

@@ -132,15 +132,12 @@ public class HomeFragmentBlackBoxTest {
         // Wait for post detail to load - verify title is displayed first
         onView(withId(R.id.titleTextView)).check(matches(isDisplayed()));
         
-        // Scroll to comments section (it's inside a NestedScrollView)
-        // Check for the "Comments" label or comment button as they're more reliable indicators
+        // Check for the comment button - this indicates comments section is available
         onView(withId(R.id.commentButton)).check(matches(isDisplayed()));
         
-        // Also verify the comments RecyclerView exists (may be empty, but should be in layout)
-        // Use scrollTo to ensure it's in view
-        onView(withId(R.id.commentsRecyclerView))
-            .perform(scrollTo())
-            .check(matches(isDisplayed()));
+        // Verify the comments RecyclerView exists in the layout (may be empty)
+        // Don't use scrollTo() as it can fail with animations enabled
+        onView(withId(R.id.commentsRecyclerView)).check(matches(isDisplayed()));
     }
     
     @Test

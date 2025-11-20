@@ -39,11 +39,21 @@ public class CreatePostViewModel extends ViewModel {
             return;
         }
         
+        // For regular posts, ensure prompt sections are null (defensive check)
+        // This prevents issues if prompt sections are accidentally passed for regular posts
+        if (!isPrompt) {
+            promptSection = null;
+            descriptionSection = null;
+        }
+        
         // For prompt posts, require either prompt_section or description_section
         // For regular posts, require content
         if (isPrompt) {
-            if ((promptSection == null || promptSection.trim().isEmpty()) && 
-                (descriptionSection == null || descriptionSection.trim().isEmpty())) {
+            // Check if prompt sections are null or empty after trimming
+            boolean hasPromptSection = promptSection != null && !promptSection.trim().isEmpty();
+            boolean hasDescriptionSection = descriptionSection != null && !descriptionSection.trim().isEmpty();
+            
+            if (!hasPromptSection && !hasDescriptionSection) {
                 error.postValue("Prompt posts require either prompt section or description section");
                 return;
             }
