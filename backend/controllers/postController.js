@@ -344,8 +344,13 @@ const createPost = async (req, res) => {
     const prompt_section = (req.body.prompt_section || '').trim();
     const description_section = (req.body.description_section || '').trim();
 
-    // Ensure is_prompt_post is treated as a boolean even when sent as a string from form data
-    const isPromptPost = req.body.is_prompt_post === true || req.body.is_prompt_post === 'true';
+    // Ensure is_prompt_post is treated as a boolean even when sent as a string from form data.
+    // Guard against accidental prompt validation when the toggle is off but the backend receives
+    // an unexpected truthy value by only treating the request as a prompt post when either the
+    // toggle is explicitly true OR the prompt-specific fields are present.
+    const requestedPromptPost = req.body.is_prompt_post === true || req.body.is_prompt_post === 'true';
+    const hasPromptContent = !!(prompt_section || description_section);
+    const isPromptPost = requestedPromptPost && hasPromptContent;
 
     // Validation
     if (!title || !llm_tag) {
