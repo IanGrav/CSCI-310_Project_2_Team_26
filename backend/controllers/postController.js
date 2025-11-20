@@ -339,7 +339,8 @@ const createPost = async (req, res) => {
     // Normalize and trim incoming payload to avoid accepting empty whitespace
     const title = (req.body.title || '').trim();
     const content = (req.body.content || '').trim();
-    const llm_tag = (req.body.llm_tag || '').trim();
+    // Accept either "llm_tag" (preferred) or legacy "tag" field names from older clients
+    const llm_tag = (req.body.llm_tag || req.body.tag || '').trim();
     const prompt_section = (req.body.prompt_section || '').trim();
     const description_section = (req.body.description_section || '').trim();
 
