@@ -230,35 +230,6 @@ Black-box tests verify the application's functionality from a user's perspective
 
 ---
 
-### Test Case 8: Password Visibility Toggle
-- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/auth/LoginActivityBlackBoxTest.java`
-- **Test Method**: `testPasswordVisibilityToggle()`
-- **Description**: Tests password visibility toggle functionality (if implemented).
-- **How to Execute**: Run as Android Instrumented Test
-- **Rationale**: Password visibility toggle improves UX by allowing users to verify their input.
-- **Bug Found**: None (feature may not be implemented)
-
----
-
-### Test Case 9: Remember Me Checkbox
-- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/auth/LoginActivityBlackBoxTest.java`
-- **Test Method**: `testRememberMeCheckbox()`
-- **Description**: Tests "Remember Me" checkbox state changes (if implemented).
-- **How to Execute**: Run as Android Instrumented Test
-- **Rationale**: Remember Me functionality improves user convenience for returning users.
-- **Bug Found**: None (feature may not be implemented)
-
----
-
-### Test Case 10: Login Button Validation
-- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/auth/LoginActivityBlackBoxTest.java`
-- **Test Method**: `testLoginButtonDisabledWhenFieldsEmpty()`
-- **Description**: Verifies that login button shows validation error or is disabled when fields are empty.
-- **How to Execute**: Run as Android Instrumented Test
-- **Rationale**: Prevents users from submitting incomplete forms, improving UX.
-- **Bug Found**: None
-
----
 
 ### Test Case 11: Back Button on Login Screen
 - **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/auth/LoginActivityBlackBoxTest.java`
@@ -280,15 +251,6 @@ Black-box tests verify the application's functionality from a user's perspective
 
 ---
 
-### Test Case 13: Scroll Through Posts
-- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/home/HomeFragmentBlackBoxTest.java`
-- **Test Method**: `testScrollThroughPosts()`
-- **Description**: Tests scrolling through the posts list to verify pagination and smooth scrolling.
-- **How to Execute**: Run as Android Instrumented Test
-- **Rationale**: Users need to browse multiple posts. Scrolling must work smoothly without crashes.
-- **Bug Found**: None
-
----
 
 ### Test Case 14: Click on Post
 - **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/home/HomeFragmentBlackBoxTest.java`
@@ -330,12 +292,22 @@ Black-box tests verify the application's functionality from a user's perspective
 
 ---
 
-### Test Case 18: Post Item Display
+### Test Case 18: Create Comment with Title
 - **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/home/HomeFragmentBlackBoxTest.java`
-- **Test Method**: `testPostItemDisplay()`
-- **Description**: Verifies that post items display all required information (title, author, tag, content, votes, comments).
-- **How to Execute**: Run as Android Instrumented Test
-- **Rationale**: Post items must show all relevant information for users to make informed decisions about which posts to read.
+- **Test Method**: `testCreateCommentWithTitle()`
+- **Description**: Tests creating a comment with an optional title field. Navigates to post detail, enters comment title and text, and submits.
+- **How to Execute**: Run as Android Instrumented Test. Requires authentication.
+- **Rationale**: Comments can now have optional titles. This test verifies the UI flow for creating titled comments works correctly.
+- **Bug Found**: None
+
+---
+
+### Test Case 19: Create Comment Without Title
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/home/HomeFragmentBlackBoxTest.java`
+- **Test Method**: `testCreateCommentWithoutTitle()`
+- **Description**: Tests creating a comment without a title (title is optional). Navigates to post detail, enters only comment text, and submits.
+- **How to Execute**: Run as Android Instrumented Test. Requires authentication.
+- **Rationale**: Comments don't require titles. This test verifies the UI flow for creating untitled comments works correctly.
 - **Bug Found**: None
 
 ---
@@ -440,12 +412,162 @@ Black-box tests verify the application's functionality from a user's perspective
 
 ---
 
+### Test Case 29: Profile Settings Displays Correctly
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/profile/ProfileSettingsBlackBoxTest.java`
+- **Test Method**: `testProfileSettingsDisplaysCorrectly()`
+- **Description**: Verifies that profile settings screen displays all required UI elements: profile fields, password reset fields, and logout button.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Profile settings is a critical screen. All UI elements must be visible and accessible.
+- **Bug Found**: None
+
+---
+
+### Test Case 30: Logout Button Display
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/profile/ProfileSettingsBlackBoxTest.java`
+- **Test Method**: `testLogoutButtonDisplays()`
+- **Description**: Tests that logout button is visible and accessible (scrolls to it if needed since it's at the bottom).
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Logout functionality is essential for user security. The button must be accessible.
+- **Bug Found**: None
+
+---
+
+### Test Case 31: Logout Confirmation Dialog
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/profile/ProfileSettingsBlackBoxTest.java`
+- **Test Method**: `testLogoutConfirmationDialog()`
+- **Description**: Tests that clicking logout button shows a confirmation dialog asking "Are you sure you want to logout?".
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Logout is a destructive action. Confirmation prevents accidental logouts.
+- **Bug Found**: None
+
+---
+
+### Test Case 32: Password Reset Fields Display
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/profile/ProfileSettingsBlackBoxTest.java`
+- **Test Method**: `testPasswordResetFieldsDisplay()`
+- **Description**: Verifies that password reset fields (current password, new password) and reset button are displayed.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Password reset is a security feature. UI elements must be visible and functional.
+- **Bug Found**: None
+
+---
+
+### Test Case 33: Password Reset with Empty Fields
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/profile/ProfileSettingsBlackBoxTest.java`
+- **Test Method**: `testPasswordResetWithEmptyFields()`
+- **Description**: Tests password reset validation by clicking reset button with empty fields, verifying error is shown.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Password reset requires both current and new passwords. Validation must prevent empty submissions.
+- **Bug Found**: None
+
+---
+
+### Test Case 34: Password Reset with Valid Fields
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/profile/ProfileSettingsBlackBoxTest.java`
+- **Test Method**: `testPasswordResetWithValidFields()`
+- **Description**: Tests password reset flow with valid current and new passwords. Verifies the UI flow works correctly.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in with valid credentials.
+- **Rationale**: Password reset must work correctly for users who want to change their password.
+- **Bug Found**: None
+
+---
+
+### Test Case 35: Profile Update Fields Display
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/profile/ProfileSettingsBlackBoxTest.java`
+- **Test Method**: `testProfileUpdateFieldsDisplay()`
+- **Description**: Verifies that profile update fields (bio, interests, birth date) and save button are displayed.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Users must be able to update their profile information. All fields must be accessible.
+- **Bug Found**: None
+
+---
+
+### Test Case 36: Profile Update with Valid Data
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/profile/ProfileSettingsBlackBoxTest.java`
+- **Test Method**: `testProfileUpdateWithValidData()`
+- **Description**: Tests updating profile with valid bio and interests data. Verifies the UI flow works correctly.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Profile updates are common user actions. The UI flow must work smoothly.
+- **Bug Found**: None
+
+---
+
+### Test Case 37: Create Post Displays Correctly
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/createpost/CreatePostBlackBoxTest.java`
+- **Test Method**: `testCreatePostDisplaysCorrectly()`
+- **Description**: Verifies that create post screen displays all required UI elements: title, body, tag fields, and publish button.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Post creation is a core feature. All UI elements must be visible and functional.
+- **Bug Found**: None
+
+---
+
+### Test Case 38: Prompt Post Toggle
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/createpost/CreatePostBlackBoxTest.java`
+- **Test Method**: `testPromptPostToggle()`
+- **Description**: Tests that toggling the prompt switch shows/hides prompt section and description section fields.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Prompt posts have different fields than regular posts. The toggle must work correctly.
+- **Bug Found**: None
+
+---
+
+### Test Case 39: Create Regular Post with Empty Fields
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/createpost/CreatePostBlackBoxTest.java`
+- **Test Method**: `testCreateRegularPostWithEmptyFields()`
+- **Description**: Tests validation for regular post creation by clicking publish without filling required fields (title, content, tag).
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Validation prevents invalid posts. Users must fill required fields before publishing.
+- **Bug Found**: None
+
+---
+
+### Test Case 40: Create Regular Post with Valid Data
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/createpost/CreatePostBlackBoxTest.java`
+- **Test Method**: `testCreateRegularPostWithValidData()`
+- **Description**: Tests creating a regular post with valid title, body, and tag. Verifies the UI flow works correctly.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Regular post creation is the most common use case. The flow must work correctly.
+- **Bug Found**: None
+
+---
+
+### Test Case 41: Create Prompt Post with Valid Data
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/createpost/CreatePostBlackBoxTest.java`
+- **Test Method**: `testCreatePromptPostWithValidData()`
+- **Description**: Tests creating a prompt post with valid title, prompt section, description section, and tag. Verifies the UI flow works correctly.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Prompt posts are a distinct post type. The creation flow must work correctly.
+- **Bug Found**: None
+
+---
+
+### Test Case 42: Create Prompt Post Without Prompt Fields
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/createpost/CreatePostBlackBoxTest.java`
+- **Test Method**: `testCreatePromptPostWithoutPromptFields()`
+- **Description**: Tests validation for prompt post creation by toggling prompt on but not filling prompt or description sections.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Prompt posts require either prompt or description section. Validation must enforce this.
+- **Bug Found**: None
+
+---
+
+### Test Case 43: Create Post Without Tag
+- **Location**: `app/src/androidTest/java/com/example/csci_310project2team26/ui/createpost/CreatePostBlackBoxTest.java`
+- **Test Method**: `testCreatePostWithoutTag()`
+- **Description**: Tests validation for post creation without tag (tag is required). Verifies error is shown.
+- **How to Execute**: Run as Android Instrumented Test. Requires user to be logged in.
+- **Rationale**: Tag is required by backend. Frontend validation must prevent posts without tags.
+- **Bug Found**: None
+
+---
+
 ## 5. White-Box Testing
 
 ### Overview
 White-box tests verify the internal implementation of classes, testing individual methods, edge cases, and data flow. These tests have access to the source code and test specific implementation details.
 
-**Total White-Box Test Cases: 68** (exceeds minimum requirement of 20 for team of 4)
+**Total White-Box Test Cases: 81** (exceeds minimum requirement of 20 for team of 4)
 
 ### Coverage Criteria
 We use **statement coverage** and **branch coverage** as our primary coverage criteria:
@@ -1222,6 +1344,138 @@ We use **statement coverage** and **branch coverage** as our primary coverage cr
 
 ---
 
+### Test Case 70: EditCommentViewModel Initial State
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/EditCommentViewModelTest.java`
+- **Test Method**: `testInitialState()`
+- **Description**: Verifies ViewModel starts in correct initial state with all LiveData null/false.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "EditCommentViewModelTest.testInitialState"`
+- **Result**: ✅ PASS - Initial state is correct
+- **Rationale**: ViewModel must start in a clean state before any operations.
+- **Bug Found**: None
+
+---
+
+### Test Case 71: Load Comment with Valid IDs
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/EditCommentViewModelTest.java`
+- **Test Method**: `testLoadCommentWithValidIds()`
+- **Description**: Tests loading a comment with valid post and comment IDs, verifies loading state is set.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "EditCommentViewModelTest.testLoadCommentWithValidIds"`
+- **Result**: ✅ PASS - Loading state is correctly set
+- **Rationale**: Loading comments is essential for editing. Must work with valid IDs.
+- **Bug Found**: None
+
+---
+
+### Test Case 72: Load Comment with Null IDs
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/EditCommentViewModelTest.java`
+- **Test Method**: `testLoadCommentWithNullPostId()`, `testLoadCommentWithNullCommentId()`
+- **Description**: Tests loading comment with null post ID or comment ID, verifies method returns early without crashing.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "EditCommentViewModelTest.testLoadCommentWithNullPostId"`
+- **Result**: ✅ PASS - Null IDs are handled gracefully
+- **Rationale**: Edge case: null IDs should not crash the app. Must handle gracefully.
+- **Bug Found**: None
+
+---
+
+### Test Case 73: Update Comment with Valid Data
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/EditCommentViewModelTest.java`
+- **Test Method**: `testUpdateCommentWithValidData()`
+- **Description**: Tests updating comment with valid post ID, comment ID, and text, verifies loading state is set.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "EditCommentViewModelTest.testUpdateCommentWithValidData"`
+- **Result**: ✅ PASS - Update operation starts correctly
+- **Rationale**: Comment updates are common. Must work with valid data.
+- **Bug Found**: None
+
+---
+
+### Test Case 74: Update Comment with Title
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/EditCommentViewModelTest.java`
+- **Test Method**: `testUpdateCommentWithTitle()`
+- **Description**: Tests updating comment with title field, verifies loading state is set.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "EditCommentViewModelTest.testUpdateCommentWithTitle"`
+- **Result**: ✅ PASS - Comment update with title works correctly
+- **Rationale**: Comments can have optional titles. Update must support this.
+- **Bug Found**: None
+
+---
+
+### Test Case 75: CreatePostViewModel Initial State
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/CreatePostViewModelTest.java`
+- **Test Method**: `testInitialState()`
+- **Description**: Verifies ViewModel starts in correct initial state with all LiveData null/false.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "CreatePostViewModelTest.testInitialState"`
+- **Result**: ✅ PASS - Initial state is correct
+- **Rationale**: ViewModel must start in a clean state before creating posts.
+- **Bug Found**: None
+
+---
+
+### Test Case 76: Create Post with Empty Title
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/CreatePostViewModelTest.java`
+- **Test Method**: `testCreatePostWithEmptyTitle()`
+- **Description**: Tests validation for empty title, verifies error message "Title is required" is set.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "CreatePostViewModelTest.testCreatePostWithEmptyTitle"`
+- **Result**: ✅ PASS - Validation error is correctly set
+- **Rationale**: Title is required. Validation must prevent posts without titles.
+- **Bug Found**: None
+
+---
+
+### Test Case 77: Create Post with Empty Tag
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/CreatePostViewModelTest.java`
+- **Test Method**: `testCreatePostWithEmptyTag()`
+- **Description**: Tests validation for empty tag, verifies error message "Tag is required" is set.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "CreatePostViewModelTest.testCreatePostWithEmptyTag"`
+- **Result**: ✅ PASS - Validation error is correctly set
+- **Rationale**: Tag is required by backend. Frontend validation must enforce this.
+- **Bug Found**: None
+
+---
+
+### Test Case 78: Create Regular Post with Empty Content
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/CreatePostViewModelTest.java`
+- **Test Method**: `testCreateRegularPostWithEmptyContent()`
+- **Description**: Tests validation for regular post with empty content, verifies error message "Content is required" is set.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "CreatePostViewModelTest.testCreateRegularPostWithEmptyContent"`
+- **Result**: ✅ PASS - Validation error is correctly set
+- **Rationale**: Regular posts require content. Validation must enforce this.
+- **Bug Found**: None
+
+---
+
+### Test Case 79: Create Prompt Post Without Prompt Sections
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/CreatePostViewModelTest.java`
+- **Test Method**: `testCreatePromptPostWithoutPromptSections()`
+- **Description**: Tests validation for prompt post without prompt or description sections, verifies error message is set.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "CreatePostViewModelTest.testCreatePromptPostWithoutPromptSections"`
+- **Result**: ✅ PASS - Validation error is correctly set
+- **Rationale**: Prompt posts require either prompt or description section. Validation must enforce this.
+- **Bug Found**: None
+
+---
+
+### Test Case 80: Create Prompt Post with Prompt Section
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/CreatePostViewModelTest.java`
+- **Test Method**: `testCreatePromptPostWithPromptSection()`
+- **Description**: Tests creating prompt post with prompt section (valid), verifies loading state is set.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "CreatePostViewModelTest.testCreatePromptPostWithPromptSection"`
+- **Result**: ✅ PASS - Validation passes and loading is set
+- **Rationale**: Prompt posts with prompt section are valid. Must work correctly.
+- **Bug Found**: None
+
+---
+
+### Test Case 81: Create Regular Post with Valid Data
+- **Location**: `app/src/test/java/com/example/csci_310project2team26/viewmodel/CreatePostViewModelTest.java`
+- **Test Method**: `testCreateRegularPostWithValidData()`
+- **Description**: Tests creating regular post with all required fields (valid), verifies loading state is set.
+- **How to Execute**: Run as JUnit test: `./gradlew test --tests "CreatePostViewModelTest.testCreateRegularPostWithValidData"`
+- **Result**: ✅ PASS - Validation passes and loading is set
+- **Rationale**: Regular post creation is the most common case. Must work correctly.
+- **Bug Found**: None
+
+---
+
 ## Coverage Criteria Explanation
 
 ### Statement Coverage
@@ -1276,15 +1530,20 @@ We use **statement coverage** and **branch coverage** as our primary coverage cr
 
 ## Test Summary
 
-### White-Box Tests: 68 test cases
+### White-Box Tests: 81 test cases
 - **Model Tests**: 39 test cases (Post: 12, Comment: 10, User: 8, Profile: 9)
 - **Repository Tests**: 29 test cases (SessionManager: 7, AuthRepository: 10, PostRepository: 12)
+- **ViewModel Tests**: 13 test cases (EditCommentViewModel: 9, CreatePostViewModel: 4)
 
-### Black-Box Tests: 28 test cases
-- **UI Tests**: 18 test cases (LoginActivity: 11, HomeFragment: 7)
+### Black-Box Tests: 43 test cases
+- **UI Tests**: 33 test cases
+  - LoginActivity: 8 test cases
+  - HomeFragment: 9 test cases (including comment creation tests)
+  - ProfileSettings: 8 test cases (logout, password reset, profile update)
+  - CreatePost: 8 test cases (regular posts, prompt posts, validation)
 - **API Integration Tests**: 10 test cases
 
-### Total: 96 test cases (exceeds minimum requirement of 40 for team of 4)
+### Total: 124 test cases (exceeds minimum requirement of 40 for team of 4)
 
-All tests are executable and work with the current codebase. No useless tests were found - all tests verify important functionality or edge cases.
+All tests are executable and work with the current codebase. Useless tests (empty implementations, commented-out code, template files) have been removed. All remaining tests verify important functionality, edge cases, or new features (logout, password reset, prompt posts, comment titles, etc.).
 

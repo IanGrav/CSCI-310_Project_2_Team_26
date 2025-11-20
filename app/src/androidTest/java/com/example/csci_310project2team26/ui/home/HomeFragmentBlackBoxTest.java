@@ -67,19 +67,6 @@ public class HomeFragmentBlackBoxTest {
     }
     
     @Test
-    public void testScrollThroughPosts() {
-        // Rationale: Test scrolling through the posts list
-        // Input: Scroll down the posts list
-        // Expected: More posts are loaded and displayed
-        
-        // Scroll to a specific position in RecyclerView
-        // onView(withId(R.id.postsRecyclerView))
-        //     .perform(RecyclerViewActions.scrollToPosition(10));
-        
-        // Verify scrolling works (no crash, posts visible)
-    }
-    
-    @Test
     public void testClickOnPost() {
         // Rationale: Test clicking on a post to view details
         // Input: Click on first post in the list
@@ -134,29 +121,80 @@ public class HomeFragmentBlackBoxTest {
     public void testViewPostComments() {
         // Rationale: Test viewing comments on a post
         // Input: Navigate to post detail
-        // Expected: Comments RecyclerView is displayed
+        // Expected: Comments section is displayed (RecyclerView or comment button)
         
         // Navigate to post detail
         onView(withId(R.id.postsRecyclerView))
             .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         
-        // Verify comments RecyclerView is displayed (using correct ID)
-        onView(withId(R.id.commentsRecyclerView)).check(matches(isDisplayed()));
+        // Wait for post detail to load - verify title is displayed first
+        onView(withId(R.id.titleTextView)).check(matches(isDisplayed()));
+        
+        // Scroll to comments section (it's inside a NestedScrollView)
+        // Check for the "Comments" label or comment button as they're more reliable indicators
+        onView(withId(R.id.commentButton)).check(matches(isDisplayed()));
+        
+        // Also verify the comments RecyclerView exists (may be empty, but should be in layout)
+        // Use scrollTo to ensure it's in view
+        onView(withId(R.id.commentsRecyclerView))
+            .perform(scrollTo())
+            .check(matches(isDisplayed()));
     }
     
     @Test
-    public void testPostItemDisplay() {
-        // Rationale: Test that post items display all required information
-        // Input: View posts list
-        // Expected: Each post item shows title, author, tag, content, votes, comments
+    public void testCreateCommentWithTitle() {
+        // Rationale: Test creating a comment with optional title
+        // Input: Navigate to post detail, enter comment title and text, submit
+        // Expected: Comment is created with title
         
-        // Verify post item elements are displayed (using correct IDs from item_post.xml)
-        // Note: These are in RecyclerView items, so we check the first item
+        // Navigate to post detail
         onView(withId(R.id.postsRecyclerView))
-            .perform(RecyclerViewActions.actionOnItemAtPosition(0, scrollTo()));
+            .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         
-        // These would be checked within the RecyclerView item
-        // titleTextView, authorTextView, tagTextView, contentTextView exist in item_post.xml
+        // Scroll to comment input section
+        onView(withId(R.id.commentTitleEditText))
+            .perform(scrollTo())
+            .check(matches(isDisplayed()));
+        
+        // Enter comment title (optional)
+        onView(withId(R.id.commentTitleEditText))
+            .perform(typeText("Test Comment Title"), closeSoftKeyboard());
+        
+        // Enter comment text
+        onView(withId(R.id.commentEditText))
+            .perform(typeText("Test comment text"), closeSoftKeyboard());
+        
+        // Click add comment button
+        onView(withId(R.id.addCommentButton)).perform(click());
+        
+        // Note: Actual success depends on backend
+        // This test verifies the UI flow works correctly
+    }
+    
+    @Test
+    public void testCreateCommentWithoutTitle() {
+        // Rationale: Test creating a comment without title (title is optional)
+        // Input: Navigate to post detail, enter only comment text, submit
+        // Expected: Comment is created without title
+        
+        // Navigate to post detail
+        onView(withId(R.id.postsRecyclerView))
+            .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+        
+        // Scroll to comment input section
+        onView(withId(R.id.commentEditText))
+            .perform(scrollTo())
+            .check(matches(isDisplayed()));
+        
+        // Enter comment text (no title)
+        onView(withId(R.id.commentEditText))
+            .perform(typeText("Test comment without title"), closeSoftKeyboard());
+        
+        // Click add comment button
+        onView(withId(R.id.addCommentButton)).perform(click());
+        
+        // Note: Actual success depends on backend
+        // This test verifies the UI flow works correctly
     }
     
 }

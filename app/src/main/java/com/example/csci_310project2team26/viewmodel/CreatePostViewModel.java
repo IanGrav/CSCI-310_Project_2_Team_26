@@ -33,6 +33,12 @@ public class CreatePostViewModel extends ViewModel {
             return;
         }
         
+        // Tag (llm_tag) is required by backend
+        if (tag == null || tag.trim().isEmpty()) {
+            error.postValue("Tag is required");
+            return;
+        }
+        
         // For prompt posts, require either prompt_section or description_section
         // For regular posts, require content
         if (isPrompt) {
