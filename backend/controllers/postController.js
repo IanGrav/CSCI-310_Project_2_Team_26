@@ -345,12 +345,15 @@ const createPost = async (req, res) => {
     const description_section = (req.body.description_section || '').trim();
 
     // Ensure is_prompt_post is treated as a boolean even when sent as a string from form data.
-    // Guard against accidental prompt validation when the toggle is off but the backend receives
-    // an unexpected truthy value by only treating the request as a prompt post when either the
-    // toggle is explicitly true OR the prompt-specific fields are present.
+    // If the toggle is on but no prompt content is provided, treat the post as a regular post
+    // instead of failing validation. This mirrors the client behavior where the prompt fields
+    // are hidden when the toggle is off, so stale UI state shouldn't block normal posts.
     const requestedPromptPost = req.body.is_prompt_post === true || req.body.is_prompt_post === 'true';
     const hasPromptContent = !!(prompt_section || description_section);
-    const isPromptPost = requestedPromptPost && hasPromptContent;
+    let isPromptPost = requestedPromptPost || hasPromptContent;
+    if (isPromptPost && !hasPromptContent) {
+      isPromptPost = false;
+    }
 
     // Validation
     if (!title || !llm_tag) {
@@ -378,6 +381,13 @@ const createPost = async (req, res) => {
       }
     }
 
+    // Some clients omit the body field for prompt posts. To keep the database insert happy on
+    // schemas where content is non-nullable, reuse the prompt fields as a fallback payload when
+    // handling a prompt submission.
+    const normalizedContent = isPromptPost
+      ? (content || description_section || prompt_section || '')
+      : content;
+
     // Insert post
     const insertResult = await query(
       `INSERT INTO posts (author_id, title, content, llm_tag, is_prompt_post, prompt_section, description_section)
@@ -386,7 +396,7 @@ const createPost = async (req, res) => {
       [
         authorId,
         title,
-        content || null,
+        normalizedContent || null,
         llm_tag,
         isPromptPost || false,
         prompt_section || null,
