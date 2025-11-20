@@ -346,9 +346,13 @@ const createPost = async (req, res) => {
       });
     }
 
+    // CRITICAL: Normalize is_prompt_post to boolean
+    // Form data may send "true"/"false" as strings, or true/false as booleans
+    const isPromptPost = is_prompt_post === true || is_prompt_post === 'true' || is_prompt_post === 1 || is_prompt_post === '1';
+    
     // For prompt posts, require either prompt_section or description_section
     // For regular posts, require content
-    if (is_prompt_post) {
+    if (isPromptPost) {
       if ((!prompt_section || prompt_section.trim() === '') && 
           (!description_section || description_section.trim() === '')) {
         return res.status(400).json({
@@ -357,6 +361,7 @@ const createPost = async (req, res) => {
         });
       }
     } else {
+      // REGULAR POST: Ensure prompt sections are null and require content
       if (!content || content.trim() === '') {
         return res.status(400).json({
           error: 'Missing required fields',
@@ -366,11 +371,15 @@ const createPost = async (req, res) => {
     }
 
     // Insert post
+    // For regular posts, ensure prompt sections are null
+    const finalPromptSection = isPromptPost ? (prompt_section || null) : null;
+    const finalDescriptionSection = isPromptPost ? (description_section || null) : null;
+    
     const insertResult = await query(
       `INSERT INTO posts (author_id, title, content, llm_tag, is_prompt_post, prompt_section, description_section)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
-      [authorId, title, content || null, llm_tag, is_prompt_post || false, prompt_section || null, description_section || null]
+      [authorId, title, content || null, llm_tag, isPromptPost, finalPromptSection, finalDescriptionSection]
     );
 
     const postId = insertResult.rows[0].id;

@@ -102,36 +102,23 @@ APIIntegrationBlackBoxTest > testAPIConnectivity PASSED
 
 ---
 
-## Test Users Required for Database
+## Test User Required for Database
 
-**You must add these 3 test users to your database before running tests that require authentication.**
+**You must add this 1 test user to your database before running tests that require authentication.**
 
-### Test Users Summary
+### Test User Summary
 
-| User | Email | Password | Student ID | Purpose |
-|------|-------|----------|------------|---------|
-| Test User 1 | `testuser@usc.edu` | `TestPassword123!` | `1234567890` | Primary auth & content tests |
-| Test User 2 | `testuser2@usc.edu` | `TestPassword123!` | `0987654321` | Multi-user scenarios |
-| Test User 3 | `profiletest@usc.edu` | `TestPassword123!` | `1122334455` | Profile tests |
+| Email | Password | Student ID | Name |
+|-------|----------|------------|------|
+| `blackboxtest@usc.edu` | `BlackBoxTest2024!` | `9999999999` | Black Box Test User |
 
-### How to Add Test Users
+### How to Add Test User
 
 #### Option 1: Via Backend API (Recommended)
 ```bash
-# Test User 1
 curl -X POST https://csci-310project2team26real-production.up.railway.app/api/auth/register \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "name=Test User One&email=testuser@usc.edu&student_id=1234567890&password=TestPassword123!"
-
-# Test User 2
-curl -X POST https://csci-310project2team26real-production.up.railway.app/api/auth/register \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "name=Test User Two&email=testuser2@usc.edu&student_id=0987654321&password=TestPassword123!"
-
-# Test User 3
-curl -X POST https://csci-310project2team26real-production.up.railway.app/api/auth/register \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "name=Profile Test User&email=profiletest@usc.edu&student_id=1122334455&password=TestPassword123!"
+  -d "name=Black Box Test User&email=blackboxtest@usc.edu&student_id=9999999999&password=BlackBoxTest2024!"
 ```
 
 #### Option 2: Direct SQL Insert
@@ -139,16 +126,14 @@ curl -X POST https://csci-310project2team26real-production.up.railway.app/api/au
 -- Note: Replace password_hash with actual bcrypt hash from your backend
 INSERT INTO users (name, email, student_id, password_hash, created_at)
 VALUES 
-    ('Test User One', 'testuser@usc.edu', '1234567890', '<hashed_password>', NOW()),
-    ('Test User Two', 'testuser2@usc.edu', '0987654321', '<hashed_password>', NOW()),
-    ('Profile Test User', 'profiletest@usc.edu', '1122334455', '<hashed_password>', NOW());
+    ('Black Box Test User', 'blackboxtest@usc.edu', '9999999999', '<hashed_password>', NOW());
 ```
 
-### Verify Test Users
+### Verify Test User
 ```bash
 curl -X POST https://csci-310project2team26real-production.up.railway.app/api/auth/login \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "email=testuser@usc.edu&password=TestPassword123!"
+  -d "email=blackboxtest@usc.edu&password=BlackBoxTest2024!"
 ```
 
 ---

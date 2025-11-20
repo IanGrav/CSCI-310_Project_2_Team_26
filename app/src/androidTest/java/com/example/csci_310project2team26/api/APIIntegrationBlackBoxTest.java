@@ -135,7 +135,7 @@ public class APIIntegrationBlackBoxTest {
         final boolean[] loggedIn = new boolean[1];
         CountDownLatch loginLatch = new CountDownLatch(1);
         
-        authRepository.login("testuser@usc.edu", "password123", true,
+        authRepository.login("blackboxtest@usc.edu", "BlackBoxTest2024!", true,
                            new AuthRepository.Callback<com.example.csci_310project2team26.data.model.User>() {
             @Override
             public void onSuccess(com.example.csci_310project2team26.data.model.User user) {

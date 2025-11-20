@@ -11,7 +11,9 @@ import androidx.test.espresso.assertion.ViewAssertions;
 import androidx.test.espresso.matcher.ViewMatchers;
 
 import com.example.csci_310project2team26.R;
+import com.example.csci_310project2team26.data.repository.SessionManager;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,6 +51,13 @@ public class LoginActivityBlackBoxTest {
     public ActivityScenarioRule<LoginActivity> activityRule = 
         new ActivityScenarioRule<>(LoginActivity.class);
     
+    @Before
+    public void clearSession() {
+        // Clear any existing session before each test to ensure LoginActivity is displayed
+        // This prevents tests from starting in MainActivity if a previous test logged in
+        SessionManager.clear();
+    }
+    
     @Test
     public void testLoginActivityDisplaysCorrectly() {
         // Rationale: Verify that login screen displays all required UI elements
@@ -79,16 +88,16 @@ public class LoginActivityBlackBoxTest {
         // Expected: Login button click triggers login attempt (outcome depends on backend)
         
         // Use test user credentials from TESTING_GUIDE.md
-        // Test User 1: testuser@usc.edu / TestPassword123!
+        // Test User: blackboxtest@usc.edu / BlackBoxTest2024!
         // Note: This test verifies the UI interaction works, not authentication success
         
         // Enter email
         onView(withId(R.id.emailEditText))
-            .perform(typeText("testuser@usc.edu"), closeSoftKeyboard());
+            .perform(typeText("blackboxtest@usc.edu"), closeSoftKeyboard());
         
         // Enter password (from TESTING_GUIDE.md)
         onView(withId(R.id.passwordEditText))
-            .perform(typeText("TestPassword123!"), closeSoftKeyboard());
+            .perform(typeText("BlackBoxTest2024!"), closeSoftKeyboard());
         
         // Verify login button is still visible and enabled before clicking
         onView(withId(R.id.loginButton))
@@ -157,7 +166,7 @@ public class LoginActivityBlackBoxTest {
         // Expected: Error message displayed indicating invalid credentials
         
         onView(withId(R.id.emailEditText))
-            .perform(typeText("testuser@usc.edu"), closeSoftKeyboard());
+            .perform(typeText("blackboxtest@usc.edu"), closeSoftKeyboard());
         onView(withId(R.id.passwordEditText))
             .perform(typeText("wrongpassword"), closeSoftKeyboard());
         onView(withId(R.id.loginButton))
@@ -187,13 +196,9 @@ public class LoginActivityBlackBoxTest {
         // Input: Press back button
         // Expected: App exits (since LoginActivity is launcher)
         // Note: This is expected Android behavior - pressing back on launcher activity exits app
-        // The activity finishing is handled by ActivityScenarioRule
         
-        // Verify activity is running before pressing back
-        activityRule.getScenario().onActivity(activity -> {
-            // Activity should be running
-            assert !activity.isFinishing();
-        });
+        // Verify login screen is displayed first
+        onView(withId(R.id.emailEditText)).check(matches(isDisplayed()));
         
         // Press back - this will finish the activity (expected Android system behavior)
         // ActivityScenarioRule will handle the activity finishing gracefully
