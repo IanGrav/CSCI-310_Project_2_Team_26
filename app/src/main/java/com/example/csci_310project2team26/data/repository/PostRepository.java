@@ -243,8 +243,21 @@ public class PostRepository {
                     String errorMsg = "Failed to create post";
                     if (response.code() == 401) {
                         errorMsg = "Authentication required";
-                    } else if (response.code() == 400) {
-                        errorMsg = "Invalid post data";
+                    } else {
+                        // Try to surface the backend validation message when available
+                        try {
+                            if (response.errorBody() != null) {
+                                String errorBody = response.errorBody().string();
+                                if (errorBody.contains("message")) {
+                                    // The error payload is small; simple contains check avoids extra JSON parsing libs
+                                    errorMsg = errorBody;
+                                }
+                            }
+                        } catch (Exception ignored) {}
+
+                        if (response.code() == 400) {
+                            errorMsg = errorMsg.equals("Failed to create post") ? "Invalid post data" : errorMsg;
+                        }
                     }
                     callback.onError(errorMsg);
                 }
