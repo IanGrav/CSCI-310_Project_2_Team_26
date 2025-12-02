@@ -78,6 +78,9 @@ public class CreatePostFragment extends Fragment {
             binding.bodyEditText.setEnabled(!inFlight);
             binding.tagEditText.setEnabled(!inFlight);
             binding.promptSwitch.setEnabled(!inFlight);
+            if (binding.anonymousSwitch != null) {
+                binding.anonymousSwitch.setEnabled(!inFlight);
+            }
             if (binding.promptSectionEditText != null) {
                 binding.promptSectionEditText.setEnabled(!inFlight);
             }
@@ -110,7 +113,9 @@ public class CreatePostFragment extends Fragment {
                 binding.descriptionSectionEditText.getText().toString() : "";
         }
 
-        viewModel.createPost(title, body, tag, isPrompt, promptSection, descriptionSection);
+        boolean isAnonymous = binding.anonymousSwitch != null && binding.anonymousSwitch.isChecked();
+
+        viewModel.createPost(title, body, tag, isPrompt, promptSection, descriptionSection, isAnonymous);
     }
 
     private void handlePostCreated(Post post) {
@@ -130,6 +135,9 @@ public class CreatePostFragment extends Fragment {
         binding.bodyEditText.setText("");
         binding.tagEditText.setText("");
         binding.promptSwitch.setChecked(false);
+        if (binding.anonymousSwitch != null) {
+            binding.anonymousSwitch.setChecked(false);
+        }
         
         // Clear and hide prompt/description fields
         if (binding.promptSectionEditText != null) {

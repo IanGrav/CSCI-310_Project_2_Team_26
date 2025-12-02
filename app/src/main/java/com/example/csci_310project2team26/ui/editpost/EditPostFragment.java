@@ -35,16 +35,10 @@ public class EditPostFragment extends Fragment {
         }
 
         binding.savePostButton.setOnClickListener(v -> onSaveClicked());
-        
+
         // Show/hide prompt fields based on toggle
         binding.editPromptSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (binding.editPromptSectionLayout != null) {
-                binding.editPromptSectionLayout.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-            }
-            // For prompt posts, body is optional
-            if (binding.editBodyEditText != null) {
-                binding.editBodyEditText.setHint(isChecked ? "Content (optional for prompt posts)" : getString(R.string.create_post_body_hint));
-            }
+            togglePromptFields(isChecked);
         });
         
         observeViewModel();
@@ -78,7 +72,10 @@ public class EditPostFragment extends Fragment {
             binding.editTitleEditText.setEnabled(!inFlight);
             binding.editBodyEditText.setEnabled(!inFlight);
             binding.editTagEditText.setEnabled(!inFlight);
-            binding.editPromptSwitch.setEnabled(!inFlight);
+            binding.editPromptSwitch.setEnabled(false);
+            if (binding.editAnonymousSwitch != null) {
+                binding.editAnonymousSwitch.setEnabled(!inFlight);
+            }
             if (binding.editPromptSectionEditText != null) {
                 binding.editPromptSectionEditText.setEnabled(!inFlight);
             }
@@ -97,12 +94,12 @@ public class EditPostFragment extends Fragment {
         binding.editTagEditText.setText(post.getLlm_tag() != null ? post.getLlm_tag() : "");
         boolean isPrompt = post.isIs_prompt_post();
         binding.editPromptSwitch.setChecked(isPrompt);
-        
-        // Show/hide prompt fields based on post type
-        if (binding.editPromptSectionLayout != null) {
-            binding.editPromptSectionLayout.setVisibility(isPrompt ? View.VISIBLE : View.GONE);
+        binding.editPromptSwitch.setEnabled(false);
+        if (binding.editAnonymousSwitch != null) {
+            binding.editAnonymousSwitch.setChecked(post.isAnonymous());
         }
-        
+        togglePromptFields(isPrompt);
+
         // Populate prompt sections if they exist
         if (isPrompt) {
             if (binding.editPromptSectionEditText != null) {
@@ -123,6 +120,7 @@ public class EditPostFragment extends Fragment {
         String body = binding.editBodyEditText.getText() != null ? binding.editBodyEditText.getText().toString() : "";
         String tag = binding.editTagEditText.getText() != null ? binding.editTagEditText.getText().toString() : "";
         boolean isPrompt = binding.editPromptSwitch.isChecked();
+        boolean isAnonymous = binding.editAnonymousSwitch != null && binding.editAnonymousSwitch.isChecked();
         
         String promptSection = null;
         String descriptionSection = null;
@@ -154,7 +152,19 @@ public class EditPostFragment extends Fragment {
             }
         }
         
-        viewModel.updatePost(postId, title, body, tag, isPrompt, promptSection, descriptionSection);
+        viewModel.updatePost(postId, title, body, tag, isPrompt, promptSection, descriptionSection, isAnonymous);
+    }
+
+    private void togglePromptFields(boolean isPrompt) {
+        if (binding.editPromptSectionLayout != null) {
+            binding.editPromptSectionLayout.setVisibility(isPrompt ? View.VISIBLE : View.GONE);
+        }
+        if (binding.editBodyLayout != null) {
+            binding.editBodyLayout.setVisibility(isPrompt ? View.GONE : View.VISIBLE);
+        }
+        if (binding.editBodyEditText != null) {
+            binding.editBodyEditText.setHint(isPrompt ? getString(R.string.create_post_body_hint_optional_prompt) : getString(R.string.create_post_body_hint));
+        }
     }
 
     @Override

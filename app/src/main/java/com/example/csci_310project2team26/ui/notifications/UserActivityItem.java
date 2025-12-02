@@ -12,14 +12,16 @@ public class UserActivityItem {
     private final String postId;
     private final String title;
     private final String subtitle;
+    private final boolean isPromptPost;
     private final long timestamp;
 
-    public UserActivityItem(Type type, String id, String postId, String title, String subtitle, long timestamp) {
+    public UserActivityItem(Type type, String id, String postId, String title, String subtitle, boolean isPromptPost, long timestamp) {
         this.type = type;
         this.id = id;
         this.postId = postId;
         this.title = title;
         this.subtitle = subtitle;
+        this.isPromptPost = isPromptPost;
         this.timestamp = timestamp;
     }
 
@@ -41,6 +43,10 @@ public class UserActivityItem {
 
     public String getSubtitle() {
         return subtitle;
+    }
+
+    public boolean isPromptPost() {
+        return isPromptPost;
     }
 
     public long getTimestamp() {
