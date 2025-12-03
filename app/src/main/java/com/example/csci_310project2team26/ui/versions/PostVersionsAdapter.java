@@ -51,6 +51,11 @@ public class PostVersionsAdapter extends ListAdapter<PostVersion, PostVersionsAd
         private final TextView versionDateTextView;
         private final TextView versionTitleTextView;
         private final TextView versionContentTextView;
+        private final TextView versionPromptTextView;
+        private final TextView versionDescriptionTextView;
+        private final View versionPromptDivider;
+        private final TextView versionTypeBadge;
+        private final TextView versionAnonymousBadge;
         private final MaterialButton revertButton;
 
         VersionViewHolder(@NonNull View itemView) {
@@ -59,6 +64,11 @@ public class PostVersionsAdapter extends ListAdapter<PostVersion, PostVersionsAd
             versionDateTextView = itemView.findViewById(R.id.versionDateTextView);
             versionTitleTextView = itemView.findViewById(R.id.versionTitleTextView);
             versionContentTextView = itemView.findViewById(R.id.versionContentTextView);
+            versionPromptTextView = itemView.findViewById(R.id.versionPromptTextView);
+            versionDescriptionTextView = itemView.findViewById(R.id.versionDescriptionTextView);
+            versionPromptDivider = itemView.findViewById(R.id.versionPromptDivider);
+            versionTypeBadge = itemView.findViewById(R.id.versionTypeBadge);
+            versionAnonymousBadge = itemView.findViewById(R.id.versionAnonymousBadge);
             revertButton = itemView.findViewById(R.id.revertButton);
         }
 
@@ -70,27 +80,63 @@ public class PostVersionsAdapter extends ListAdapter<PostVersion, PostVersionsAd
             versionNumberTextView.setText("Version " + version.getVersion_number());
             versionTitleTextView.setText(version.getTitle() != null ? version.getTitle() : "");
 
+            if (versionTypeBadge != null) {
+                versionTypeBadge.setText(version.isIs_prompt_post()
+                        ? itemView.getContext().getString(R.string.post_type_label_prompt)
+                        : itemView.getContext().getString(R.string.post_type_label_post));
+            }
+
+            if (versionAnonymousBadge != null) {
+                versionAnonymousBadge.setVisibility(version.isAnonymous() ? View.VISIBLE : View.GONE);
+                if (version.isAnonymous()) {
+                    versionAnonymousBadge.setText(itemView.getContext().getString(R.string.label_anonymous));
+                }
+            }
+
             // Format date
             String dateText = formatDate(version.getCreated_at());
             versionDateTextView.setText(dateText);
 
             // Show content preview
-            String contentPreview = "";
             if (version.isIs_prompt_post()) {
-                if (!TextUtils.isEmpty(version.getPrompt_section())) {
-                    contentPreview = version.getPrompt_section();
-                } else if (!TextUtils.isEmpty(version.getDescription_section())) {
-                    contentPreview = version.getDescription_section();
+                versionContentTextView.setVisibility(View.GONE);
+
+                String prompt = version.getPrompt_section() != null ? version.getPrompt_section().trim() : "";
+                String description = version.getDescription_section() != null ? version.getDescription_section().trim() : "";
+
+                if (versionPromptTextView != null) {
+                    versionPromptTextView.setVisibility(TextUtils.isEmpty(prompt) ? View.GONE : View.VISIBLE);
+                    versionPromptTextView.setText(TextUtils.isEmpty(prompt)
+                            ? ""
+                            : itemView.getContext().getString(R.string.version_prompt_label) + " " + prompt);
+                }
+
+                if (versionDescriptionTextView != null) {
+                    versionDescriptionTextView.setVisibility(TextUtils.isEmpty(description) ? View.GONE : View.VISIBLE);
+                    versionDescriptionTextView.setText(TextUtils.isEmpty(description)
+                            ? ""
+                            : itemView.getContext().getString(R.string.version_description_label) + " " + description);
+                }
+
+                if (versionPromptDivider != null) {
+                    boolean showDivider = versionPromptTextView != null
+                            && versionPromptTextView.getVisibility() == View.VISIBLE
+                            && versionDescriptionTextView != null
+                            && versionDescriptionTextView.getVisibility() == View.VISIBLE;
+                    versionPromptDivider.setVisibility(showDivider ? View.VISIBLE : View.GONE);
                 }
             } else {
-                contentPreview = version.getContent() != null ? version.getContent() : "";
-            }
+                String contentPreview = version.getContent() != null ? version.getContent() : "";
+                if (contentPreview.length() > 150) {
+                    contentPreview = contentPreview.substring(0, 150) + "...";
+                }
+                versionContentTextView.setText(contentPreview);
+                versionContentTextView.setVisibility(TextUtils.isEmpty(contentPreview) ? View.GONE : View.VISIBLE);
 
-            if (contentPreview.length() > 150) {
-                contentPreview = contentPreview.substring(0, 150) + "...";
+                if (versionPromptTextView != null) versionPromptTextView.setVisibility(View.GONE);
+                if (versionDescriptionTextView != null) versionDescriptionTextView.setVisibility(View.GONE);
+                if (versionPromptDivider != null) versionPromptDivider.setVisibility(View.GONE);
             }
-            versionContentTextView.setText(contentPreview);
-            versionContentTextView.setVisibility(TextUtils.isEmpty(contentPreview) ? View.GONE : View.VISIBLE);
 
             revertButton.setOnClickListener(v -> {
                 if (listener != null) {
