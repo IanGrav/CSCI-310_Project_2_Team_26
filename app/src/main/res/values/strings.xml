@@ -129,7 +129,7 @@
     <string name="create_post_view_drafts">Saved drafts</string>
     <string name="create_post_success">Post created!</string>
     <string name="create_post_error">Unable to create post</string>
-    <string name="create_post_draft_saved">Draft saved locally</string>
+    <string name="create_post_draft_saved">Draft saved</string>
     <string name="create_post_draft_error">Add a title before saving your draft</string>
     <string name="title_edit_post">Edit Post</string>
     <string name="edit_post_save">Save changes</string>
@@ -156,10 +156,13 @@
     <string name="saved_drafts_empty">You haven’t saved any drafts yet.</string>
     <string name="draft_meta_prompt">Prompt</string>
     <string name="draft_meta_post">Post</string>
+    <string name="label_anonymous">Anonymous</string>
     <string name="draft_use_button">Use draft</string>
     <string name="draft_delete_button">Delete</string>
     <string name="draft_prompt_label">Prompt:</string>
     <string name="draft_description_label">Description:</string>
+    <string name="version_prompt_label">Prompt:</string>
+    <string name="version_description_label">Description:</string>
     
     <!-- Search -->
     <string name="search_title">Search Posts</string>
