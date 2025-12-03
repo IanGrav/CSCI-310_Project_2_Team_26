@@ -20,16 +20,18 @@ public class TrendingPostsViewModel extends ViewModel {
     private final MutableLiveData<Boolean> loading = new MutableLiveData<>(false);
     private final MutableLiveData<String> error = new MutableLiveData<>(null);
     private final MutableLiveData<List<Post>> posts = new MutableLiveData<>(new ArrayList<>());
+    private Integer lastLimit = 10;
 
     public LiveData<Boolean> getLoading() { return loading; }
     public LiveData<String> getError() { return error; }
     public LiveData<List<Post>> getPosts() { return posts; }
 
     public void loadTrendingPosts(Integer k) {
+        lastLimit = k != null ? k : 10;
         loading.postValue(true);
         error.postValue(null);
 
-        postRepository.fetchTrendingPosts(k != null ? k : 10, new PostRepository.Callback<PostRepository.PostsResult>() {
+        postRepository.fetchTrendingPosts(lastLimit, new PostRepository.Callback<PostRepository.PostsResult>() {
             @Override
             public void onSuccess(PostRepository.PostsResult result) {
                 loading.postValue(false);
@@ -42,6 +44,29 @@ public class TrendingPostsViewModel extends ViewModel {
                 loading.postValue(false);
                 error.postValue(err);
                 posts.postValue(new ArrayList<>());
+            }
+        });
+    }
+
+    public void voteOnPost(String postId, String type) {
+        if (postId == null || type == null) {
+            error.postValue("Invalid vote request");
+            return;
+        }
+
+        loading.postValue(true);
+        error.postValue(null);
+
+        postRepository.votePost(postId, type, new PostRepository.Callback<PostRepository.VoteActionResult>() {
+            @Override
+            public void onSuccess(PostRepository.VoteActionResult result) {
+                loadTrendingPosts(lastLimit);
+            }
+
+            @Override
+            public void onError(String err) {
+                loading.postValue(false);
+                error.postValue(err != null ? err : "Failed to vote on post");
             }
         });
     }

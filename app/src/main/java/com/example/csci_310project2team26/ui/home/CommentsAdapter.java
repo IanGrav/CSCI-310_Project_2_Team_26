@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.csci_310project2team26.R;
 import com.example.csci_310project2team26.data.model.Comment;
 import com.example.csci_310project2team26.data.repository.SessionManager;
+import com.example.csci_310project2team26.data.repository.VotePreferenceManager;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -158,16 +159,25 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
             upvoteCountTextView.setText(String.valueOf(upvotes));
             downvoteCountTextView.setText(String.valueOf(downvotes));
 
+            if (comment.getId() != null) {
+                String persistedVote = VotePreferenceManager.getCommentVote(itemView.getContext(), comment.getId());
+                if (persistedVote != null && (comment.getUser_vote_type() == null || comment.getUser_vote_type().isEmpty())) {
+                    comment.setUser_vote_type(persistedVote);
+                }
+            }
+
             updateVoteIcons(comment.getUser_vote_type());
 
             // Vote buttons
             upvoteButton.setOnClickListener(v -> {
                 if (voteListener != null && comment.getId() != null && !comment.getId().isEmpty()) {
+                    toggleVoteSelection(comment, "up");
                     voteListener.onVote(comment, "up");
                 }
             });
             downvoteButton.setOnClickListener(v -> {
                 if (voteListener != null && comment.getId() != null && !comment.getId().isEmpty()) {
+                    toggleVoteSelection(comment, "down");
                     voteListener.onVote(comment, "down");
                 }
             });
@@ -209,6 +219,23 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
                         ? R.drawable.ic_arrow_down_filled_24dp
                         : R.drawable.ic_arrow_down_outline_24dp);
             }
+        }
+
+        private void toggleVoteSelection(Comment comment, String type) {
+            if (comment == null) return;
+
+            String currentVote = comment.getUser_vote_type();
+            String newVote = type;
+
+            if ("up".equalsIgnoreCase(type) && "up".equalsIgnoreCase(currentVote)) {
+                newVote = null;
+            } else if ("down".equalsIgnoreCase(type) && "down".equalsIgnoreCase(currentVote)) {
+                newVote = null;
+            }
+
+            comment.setUser_vote_type(newVote);
+            VotePreferenceManager.setCommentVote(itemView.getContext(), comment.getId(), newVote);
+            updateVoteIcons(newVote);
         }
         
         private String formatDate(String dateString, Resources resources) {

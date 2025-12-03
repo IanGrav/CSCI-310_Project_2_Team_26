@@ -155,6 +155,10 @@ public class CreatePostFragment extends Fragment {
                 binding.descriptionSectionEditText.setText("");
             }
         }
+
+        if (binding.anonymousSwitch != null) {
+            binding.anonymousSwitch.setChecked(draft.isAnonymous());
+        }
     }
 
     private void onPublishClicked() {
