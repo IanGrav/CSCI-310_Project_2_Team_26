@@ -104,6 +104,7 @@ public class SearchFragment extends Fragment {
                 Toast.makeText(getContext(), messageId, Toast.LENGTH_SHORT).show();
             }
         });
+        postsAdapter.setOnPostVoteListener((post, type) -> postsViewModel.voteOnPost(post.getId(), type));
 
         binding.postsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.postsRecyclerView.setAdapter(postsAdapter);

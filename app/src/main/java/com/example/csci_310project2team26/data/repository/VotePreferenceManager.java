@@ -13,6 +13,7 @@ public class VotePreferenceManager {
 
     private static final String PREF_NAME = "vote_preferences";
     private static final String KEY_PREFIX_POST_VOTE = "post_vote_";
+    private static final String KEY_PREFIX_COMMENT_VOTE = "comment_vote_";
 
     private static SharedPreferences getPrefs(Context context) {
         if (context == null) {
@@ -44,5 +45,30 @@ public class VotePreferenceManager {
         }
 
         return prefs.getString(KEY_PREFIX_POST_VOTE + postId, null);
+    }
+
+    public static void setCommentVote(Context context, String commentId, String voteType) {
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs == null || TextUtils.isEmpty(commentId)) {
+            return;
+        }
+
+        String key = KEY_PREFIX_COMMENT_VOTE + commentId;
+        SharedPreferences.Editor editor = prefs.edit();
+        if (voteType == null || voteType.trim().isEmpty()) {
+            editor.remove(key);
+        } else {
+            editor.putString(key, voteType.trim());
+        }
+        editor.apply();
+    }
+
+    public static String getCommentVote(Context context, String commentId) {
+        SharedPreferences prefs = getPrefs(context);
+        if (prefs == null || TextUtils.isEmpty(commentId)) {
+            return null;
+        }
+
+        return prefs.getString(KEY_PREFIX_COMMENT_VOTE + commentId, null);
     }
 }

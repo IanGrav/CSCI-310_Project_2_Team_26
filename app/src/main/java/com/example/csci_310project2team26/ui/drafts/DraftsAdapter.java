@@ -54,6 +54,8 @@ public class DraftsAdapter extends RecyclerView.Adapter<DraftsAdapter.DraftViewH
 
     static class DraftViewHolder extends RecyclerView.ViewHolder {
         private final TextView title;
+        private final TextView typeBadge;
+        private final TextView anonymousBadge;
         private final TextView meta;
         private final TextView preview;
         private final MaterialButton useDraftButton;
@@ -62,6 +64,8 @@ public class DraftsAdapter extends RecyclerView.Adapter<DraftsAdapter.DraftViewH
         DraftViewHolder(@NonNull View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.draftTitle);
+            typeBadge = itemView.findViewById(R.id.draftTypeBadge);
+            anonymousBadge = itemView.findViewById(R.id.draftAnonymousBadge);
             meta = itemView.findViewById(R.id.draftMeta);
             preview = itemView.findViewById(R.id.draftPreview);
             useDraftButton = itemView.findViewById(R.id.useDraftButton);
@@ -70,6 +74,19 @@ public class DraftsAdapter extends RecyclerView.Adapter<DraftsAdapter.DraftViewH
 
         void bind(Draft draft, DraftActionListener actionListener) {
             title.setText(draft.getTitle());
+
+            if (typeBadge != null) {
+                typeBadge.setText(draft.isPrompt()
+                        ? itemView.getContext().getString(R.string.post_type_label_prompt)
+                        : itemView.getContext().getString(R.string.post_type_label_post));
+            }
+
+            if (anonymousBadge != null) {
+                anonymousBadge.setVisibility(draft.isAnonymous() ? View.VISIBLE : View.GONE);
+                if (draft.isAnonymous()) {
+                    anonymousBadge.setText(itemView.getContext().getString(R.string.label_anonymous));
+                }
+            }
 
             StringBuilder metaBuilder = new StringBuilder();
             metaBuilder.append(draft.isPrompt() ? itemView.getContext().getString(R.string.draft_meta_prompt)
