@@ -87,14 +87,18 @@ public class UserActivityAdapter extends ListAdapter<UserActivityItem, UserActiv
             );
             String detail = item.getSubtitle();
             StringBuilder subtitleBuilder = new StringBuilder();
-            subtitleBuilder.append(label).append(" • ").append(relative);
-            if (!TextUtils.isEmpty(detail)) {
-                if (item.getType() == UserActivityItem.Type.COMMENT) {
-                    String parentLabel = item.isPromptPost()
-                            ? itemView.getContext().getString(R.string.post_type_label_prompt)
-                            : itemView.getContext().getString(R.string.post_type_label_post);
-                    subtitleBuilder.append('\n').append(parentLabel).append(" • ").append(detail);
-                } else {
+            if (item.getType() == UserActivityItem.Type.COMMENT) {
+                String parentLabel = item.isPromptPost()
+                        ? itemView.getContext().getString(R.string.post_type_label_prompt)
+                        : itemView.getContext().getString(R.string.post_type_label_post);
+                subtitleBuilder.append(parentLabel).append(": ");
+                if (!TextUtils.isEmpty(detail)) {
+                    subtitleBuilder.append(detail).append(" • ");
+                }
+                subtitleBuilder.append(relative);
+            } else {
+                subtitleBuilder.append(label).append(" • ").append(relative);
+                if (!TextUtils.isEmpty(detail)) {
                     subtitleBuilder.append(" • ").append(detail);
                 }
             }
