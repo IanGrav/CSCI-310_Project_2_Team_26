@@ -1,3 +1,8 @@
+NEED TO UPDATE README TO "explains the improved capabilities since Project 2.4"
+
+
+
+
 Current plan: 
 
 
